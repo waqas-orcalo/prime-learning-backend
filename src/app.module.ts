@@ -1,0 +1,71 @@
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { AdminSeeder } from './database/seeders/admin.seeder';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { WinstonModule } from 'nest-winston';
+
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { LearningActivitiesModule } from './modules/learning-activities/learning-activities.module';
+import { VisitModule } from './modules/visit/visit.module';
+import { ProgressReviewModule } from './modules/progress-review/progress-review.module';
+import { PlanOfActivityModule } from './modules/plan-of-activity/plan-of-activity.module';
+import { MessagesModule } from './modules/messages/messages.module';
+import { ActivityLogModule } from './modules/activity-log/activity-log.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { CoursesModule } from './modules/courses/courses.module';
+
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { winstonConfig } from './config/winston.config';
+import { mongoConfig } from './config/mongo.config';
+
+@Module({
+  imports: [
+    // ── Config ─────────────────────────────────────────────────────────────
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+
+    // ── Database ────────────────────────────────────────────────────────────
+    MongooseModule.forRootAsync(mongoConfig),
+
+    // ── Logger ──────────────────────────────────────────────────────────────
+    WinstonModule.forRoot(winstonConfig),
+
+    // ── Feature modules ─────────────────────────────────────────────────────
+    // Add every feature module here — each is self-contained
+    AuthModule,
+    UsersModule,
+    TasksModule,
+    LearningActivitiesModule,
+    VisitModule,
+    ProgressReviewModule,
+    PlanOfActivityModule,
+    MessagesModule,
+    ActivityLogModule,
+    DashboardModule,
+    CoursesModule,
+  ],
+  providers: [
+    // ── Global guard: every route is JWT-protected unless marked @Public() ──
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+
+    // ── Global interceptor: auto-writes audit log on non-GET requests ───────
+    { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
+
+    // ── Global exception filter ──────────────────────────────────────────────
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+
+    // ── Seed hardcoded admin on first boot ───────────────────────────────────
+    AdminSeeder,
+  ],
+})
+export class AppModule implements NestModule {
+  // Apply request-logger middleware to every route
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
