@@ -5,6 +5,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { ListUsersDto } from '../dto/list-users.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateStatusDto } from '../dto/update-status.dto';
+import { UpdatePresenceDto } from '../dto/update-presence.dto';
 import {
   paginatedResponse,
   ResponseMessage,
@@ -14,12 +15,6 @@ import { ErrorMessages } from '../../../common/constants/error-messages.constant
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
 import { UserRole, UserStatus } from '../../../common/constants/enums.constant';
 
-/**
- * UsersService
- * ────────────────────────────────────────────────────────────────────────────
- * All business logic lives here — controllers are thin and call service methods.
- * Uses UserRepository for all data access (repository pattern).
- */
 @Injectable()
 export class UsersService {
   constructor(private readonly userRepository: UserRepository) {}
@@ -42,6 +37,34 @@ export class UsersService {
     if (!user) throw new NotFoundException(ErrorMessages.USER.NOT_FOUND);
     const { passwordHash: _pw, ...safeUser } = user as any;
     return successResponse(safeUser);
+  }
+
+  /** GET /users/me — return the currently-authenticated user's full profile */
+  async getMe(currentUser: IAuthUser) {
+    const user = await this.userRepository.findById(String(currentUser._id));
+    if (!user) throw new NotFoundException(ErrorMessages.USER.NOT_FOUND);
+    const { passwordHash: _pw, ...safe } = user as any;
+    return successResponse(safe);
+  }
+
+  /** PATCH /users/me — update the currently-authenticated user's own profile */
+  async updateMe(dto: UpdateUserDto, currentUser: IAuthUser) {
+    const updated = await this.userRepository.findOneAndUpdate(
+      { _id: currentUser._id },
+      { $set: dto },
+    );
+    const { passwordHash: _pw, ...safe } = updated as any;
+    return successResponse(safe, ResponseMessage.UPDATED);
+  }
+
+  /** PATCH /users/me/presence — save Set Status (presenceStatus, showOnlineStatus, oooMessage) */
+  async updatePresence(dto: UpdatePresenceDto, currentUser: IAuthUser) {
+    const updated = await this.userRepository.findOneAndUpdate(
+      { _id: currentUser._id },
+      { $set: dto },
+    );
+    const { passwordHash: _pw, ...safe } = updated as any;
+    return successResponse(safe, ResponseMessage.UPDATED);
   }
 
   async update(id: string, dto: UpdateUserDto, currentUser: IAuthUser) {

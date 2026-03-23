@@ -30,22 +30,41 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { ListUsersDto } from '../dto/list-users.dto';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateStatusDto } from '../dto/update-status.dto';
+import { UpdatePresenceDto } from '../dto/update-presence.dto';
 
-/**
- * UsersController
- * ────────────────────────────────────────────────────────────────────────────
- * Demonstrates:
- *  - CONTROLLERS + API_ENDPOINTS constants (zero hard-coded path strings)
- *  - @Roles() + RolesGuard for role-based access
- *  - @CurrentUser() to extract the JWT payload
- *  - @ApiBearerAuth() + @ApiTags for Swagger
- */
 @ApiTags(API_TAGS.USERS)
 @ApiBearerAuth()
 @Controller(CONTROLLERS.USERS)
 @UseGuards(RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  // ── /me routes MUST come before /:id to avoid NestJS route conflicts ────
+  @Get('me')
+  @ApiOperation({ summary: 'Get the currently authenticated user\'s profile' })
+  getMe(@CurrentUser() user: IAuthUser) {
+    return this.usersService.getMe(user);
+  }
+
+  @Patch('me')
+  @ApiOperation({ summary: 'Update the currently authenticated user\'s profile' })
+  updateMe(@Body() dto: UpdateUserDto, @CurrentUser() user: IAuthUser) {
+    return this.usersService.updateMe(dto, user);
+  }
+
+  @Patch('me/presence')
+  @ApiOperation({ summary: 'Update the currently authenticated user\'s presence/status' })
+  updatePresence(@Body() dto: UpdatePresenceDto, @CurrentUser() user: IAuthUser) {
+    return this.usersService.updatePresence(dto, user);
+  }
+
+  // ── Static-segment routes before /:id ────────────────────────────────────
+  @Get('by-email/:email')
+  @Roles(UserRole.TRAINER, UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Find user by exact email (trainer/admin only)' })
+  findByEmail(@Param('email') email: string) {
+    return this.usersService.findOneByEmail(email);
+  }
 
   @Get(API_ENDPOINTS.USERS.GET_ALL)
   @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
@@ -61,7 +80,7 @@ export class UsersController {
   }
 
   @Patch(API_ENDPOINTS.USERS.UPDATE)
-  @ApiOperation({ summary: 'Update a user' })
+  @ApiOperation({ summary: 'Update a user by ID' })
   update(
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
@@ -89,13 +108,6 @@ export class UsersController {
   @ApiOperation({ summary: 'Update user status (admin only)' })
   updateStatus(@Param('id') id: string, @Body() dto: UpdateStatusDto) {
     return this.usersService.updateStatus(id, dto);
-  }
-
-  @Get('by-email/:email')
-  @Roles(UserRole.TRAINER, UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Find user by exact email (trainer/admin only)' })
-  findByEmail(@Param('email') email: string) {
-    return this.usersService.findOneByEmail(email);
   }
 
   @Patch(':id/reset-password')

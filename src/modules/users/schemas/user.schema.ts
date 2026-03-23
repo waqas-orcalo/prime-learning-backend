@@ -5,12 +5,6 @@ import { UserRole, UserStatus } from '../../../common/constants/enums.constant';
 
 export type UserDocument = HydratedDocument<User>;
 
-/**
- * User Schema
- * ────────────────────────────────────────────────────────────────────────────
- * Every schema extends AbstractSchema (provides _id), then adds its own fields.
- * The SchemaFactory creates the actual Mongoose schema used in MongooseModule.
- */
 @Schema({ timestamps: true, collection: 'users' })
 export class User extends AbstractSchema {
   @Prop({ required: true, trim: true })
@@ -45,6 +39,44 @@ export class User extends AbstractSchema {
 
   @Prop({ default: null })
   lastActivityAt: Date | null;
+
+  // ── Presence / Set Status ─────────────────────────────────────────────────
+  @Prop({ default: 'Online' })
+  presenceStatus: string;
+
+  @Prop({ default: true })
+  showOnlineStatus: boolean;
+
+  @Prop({ default: '' })
+  oooMessage: string;
+
+  // ── Extended profile fields ───────────────────────────────────────────────
+  @Prop({ default: null })
+  pronouns: string | null;
+
+  @Prop({ default: null })
+  landline: string | null;
+
+  @Prop({ default: null })
+  mobile: string | null;
+
+  @Prop({ default: null })
+  skype: string | null;
+
+  @Prop({ default: null })
+  website: string | null;
+
+  @Prop({ default: null })
+  workplace: string | null;
+
+  @Prop({ default: null })
+  address: string | null;
+
+  @Prop({ default: 'UTC' })
+  timezone: string | null;
+
+  @Prop({ default: null })
+  homeAddress: string | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -31,6 +31,19 @@ export class Task extends AbstractSchema {
   @Prop({ default: null })
   dueDate: Date | null;
 
+  @Prop({ default: '' })
+  reference: string;
+
+  @Prop({ default: '' })
+  primaryMethod: string;
+
+  @Prop({ type: [String], default: [] })
+  secondaryMethods: string[];
+
+  /** Learner's evidence submission text */
+  @Prop({ default: '' })
+  evidence: string;
+
   @Prop({ default: false })
   isDeleted: boolean;
 }

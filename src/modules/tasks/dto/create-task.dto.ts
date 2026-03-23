@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsDateString,
   IsEnum,
   IsOptional,
@@ -40,4 +41,25 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   assignedTo?: string;
+
+  @ApiPropertyOptional({ example: 'FSE1', description: 'Activity reference code' })
+  @IsOptional()
+  @IsString()
+  reference?: string;
+
+  @ApiPropertyOptional({ example: 'Assignment', description: 'Primary assessment method' })
+  @IsOptional()
+  @IsString()
+  primaryMethod?: string;
+
+  @ApiPropertyOptional({ type: [String], example: ['Gateway', 'Observation'], description: 'Secondary assessment methods' })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  secondaryMethods?: string[];
+
+  @ApiPropertyOptional({ example: 'I completed the assignment by...', description: "Learner's evidence submission text" })
+  @IsOptional()
+  @IsString()
+  evidence?: string;
 }
