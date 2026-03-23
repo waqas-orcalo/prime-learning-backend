@@ -102,6 +102,9 @@ export class TasksService {
         status: TaskStatus.PENDING,
         assignedTo: new Types.ObjectId(userId),
         createdBy: (original as any).createdBy,
+        reference: (original as any).reference ?? '',
+        primaryMethod: (original as any).primaryMethod ?? '',
+        secondaryMethods: (original as any).secondaryMethods ?? [],
       } as any);
       results.push(task);
     }
