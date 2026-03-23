@@ -20,4 +20,8 @@ export const API_TAGS = {
   DASHBOARD: 'Dashboard',
   MESSAGES: 'Messages',
   COURSES: 'Courses',
+  LEARNING_JOURNALS: 'Learning Journals',
+  FEEDBACK_COMMENTS: 'Feedback & Comments',
+  DECLARATION: 'Declaration & Signatures',
+  CRITERIA: 'Criteria',
 } as const;

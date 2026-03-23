@@ -62,6 +62,8 @@ export const API_ENDPOINTS = {
     UPDATE: '/:id',
     DELETE: '/:id',
     STATS: 'stats',
+    STATS_BY_ACTIVITY: '/activity/:activityId/stats',
+    BY_ACTIVITY: '/activity/:activityId',
   },
 
   // ── Evidence ─────────────────────────────────────────────────────────────
@@ -151,6 +153,15 @@ export const API_ENDPOINTS = {
   // ── Plan of Activity ─────────────────────────────────────────────────────
   // Already defined above; DELETE added below if not present
 
+  // ── Learning Journals ─────────────────────────────────────────────────────
+  LEARNING_JOURNALS: {
+    GET_ALL: '/',
+    GET_ONE: '/:id',
+    CREATE: '/',
+    UPDATE: '/:id',
+    DELETE: '/:id',
+  },
+
   // ── Courses ────────────────────────────────────────────────────────────────
   COURSES: {
     GET_ALL: '/',
@@ -161,5 +172,32 @@ export const API_ENDPOINTS = {
     ENROLL: '/:id/enroll',
     ENROLLMENTS: '/:id/enrollments',
     UNENROLL: '/:id/enroll/:userId',
+  },
+
+  // ── Feedback & Comments ───────────────────────────────────────────────────
+  FEEDBACK_COMMENTS: {
+    GET_ALL: '/',
+    GET_ONE: '/:id',
+    CREATE: '/',
+    UPDATE: '/:id',
+    DELETE: '/:id',
+  },
+
+  // ── Declaration ────────────────────────────────────────────────────────────
+  DECLARATION: {
+    GET: '/:activityId',
+    UPSERT: '/:activityId',
+    SIGN: '/:activityId/sign',
+  },
+
+  // ── Criteria ───────────────────────────────────────────────────────────────
+  CRITERIA: {
+    GET_ALL: '/',
+    GET_ONE: '/:id',
+    CREATE: '/',
+    UPDATE: '/:id',
+    DELETE: '/:id',
+    GET_FOR_ACTIVITY: '/activity/:activityId',
+    SET_FOR_ACTIVITY: '/activity/:activityId',
   },
 } as const;

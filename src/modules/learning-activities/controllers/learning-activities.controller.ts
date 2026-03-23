@@ -52,12 +52,16 @@ export class LearningActivitiesController {
   @ApiOperation({ summary: 'Get all learning activities (filtered by role)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: String })
   findAll(
     @Query('page') page: number,
     @Query('limit') limit: number,
+    @Query('search') search: string,
+    @Query('status') status: string,
     @CurrentUser() user: IAuthUser,
   ) {
-    return this.learningActivitiesService.findAll(page, limit, user);
+    return this.learningActivitiesService.findAll(page, limit, user, search, status);
   }
 
   @Get(API_ENDPOINTS.LEARNING_ACTIVITIES.GET_ONE)

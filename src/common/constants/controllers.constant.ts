@@ -36,6 +36,21 @@ export const CONTROLLERS = {
   DASHBOARD: 'dashboard',
   MESSAGES: 'messages',
 
+  // ── Learning Journals ─────────────────────────────────────────────────────
+  LEARNING_JOURNALS: 'learning-journals',
+
   // ── Courses ────────────────────────────────────────────────────────────────
   COURSES: 'courses',
+
+  // ── Feedback & Comments ───────────────────────────────────────────────────
+  FEEDBACK_COMMENTS: 'learning-activities/feedback-comments',
+
+  // ── Declaration ────────────────────────────────────────────────────────────
+  DECLARATION: 'learning-activities/declaration',
+
+  // ── Criteria ───────────────────────────────────────────────────────────────
+  CRITERIA: 'criteria',
+
+  // ── Timesheet Entries ──────────────────────────────────────────────────────
+  TIMESHEET_ENTRIES: 'learning-activities/timesheet',
 } as const;

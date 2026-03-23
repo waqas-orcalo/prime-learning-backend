@@ -16,6 +16,12 @@ import { MessagesModule } from './modules/messages/messages.module';
 import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { CoursesModule } from './modules/courses/courses.module';
+import { LearningJournalsModule } from './modules/learning-journals/learning-journals.module';
+import { EvidenceModule } from './modules/evidence/evidence.module';
+import { FeedbackCommentModule } from './modules/feedback-comment/feedback-comment.module';
+import { DeclarationModule } from './modules/declaration/declaration.module';
+import { CriteriaModule } from './modules/criteria/criteria.module';
+import { TimesheetModule } from './modules/timesheet/timesheet.module';
 
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
@@ -48,6 +54,12 @@ import { mongoConfig } from './config/mongo.config';
     ActivityLogModule,
     DashboardModule,
     CoursesModule,
+    LearningJournalsModule,
+    EvidenceModule,
+    FeedbackCommentModule,
+    DeclarationModule,
+    CriteriaModule,
+    TimesheetModule,
   ],
   providers: [
     // ── Global guard: every route is JWT-protected unless marked @Public() ──

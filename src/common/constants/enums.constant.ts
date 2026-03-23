@@ -65,6 +65,7 @@ export enum VisitType {
   EMPLOYER_VISIT = 'EMPLOYER_VISIT',
   INITIAL_ASSESSMENT = 'INITIAL_ASSESSMENT',
   EPA_READINESS = 'EPA_READINESS',
+  REMOTE_VISIT = 'REMOTE_VISIT',
 }
 
 export enum TransportMode {
@@ -116,6 +117,12 @@ export enum ActivityLogModule {
   MESSAGES = 'MESSAGES',
 }
 
+// ── Learning Journal ──────────────────────────────────────────────────────────
+export enum JournalPrivacy {
+  ONLY_ME = 'only_me',
+  EVERYONE = 'everyone',
+}
+
 // ── Time Span Filters ────────────────────────────────────────────────────────
 export enum ETimeSpan {
   THIS_WEEK = 'THIS_WEEK',
@@ -130,4 +137,43 @@ export enum CourseStatus {
   DRAFT = 'DRAFT',
   PUBLISHED = 'PUBLISHED',
   ARCHIVED = 'ARCHIVED',
+}
+
+// ── Learning Activity Additional ──────────────────────────────────────────────
+export enum ActionRequiredBy {
+  LEARNER = 'LEARNER',
+  TRAINER = 'TRAINER',
+  BOTH = 'BOTH',
+}
+
+export enum EvidenceRecording {
+  HOLISTIC = 'HOLISTIC',
+  SEPARATE = 'SEPARATE',
+  BOTH = 'BOTH',
+}
+
+// ── Timesheet ─────────────────────────────────────────────────────────────────
+export enum TimesheetCategory {
+  CLASSROOM_DELIVERY = 'CLASSROOM_DELIVERY',
+  COMPETITION = 'COMPETITION',
+  LEARNING_ACTIVITY = 'LEARNING_ACTIVITY',
+  WORKSHOP = 'WORKSHOP',
+  E_LEARNING = 'E_LEARNING',
+  OBSERVATION = 'OBSERVATION',
+  MENTORING = 'MENTORING',
+  SELF_DIRECTED_STUDY = 'SELF_DIRECTED_STUDY',
+  ONLINE_COURSE = 'ONLINE_COURSE',
+}
+
+// ── Feedback / Comment ────────────────────────────────────────────────────────
+export enum FeedbackCommentType {
+  FEEDBACK = 'FEEDBACK',
+  COMMENT = 'COMMENT',
+}
+
+// ── Criteria ──────────────────────────────────────────────────────────────────
+export enum CriteriaType {
+  KNOWLEDGE = 'KNOWLEDGE',
+  SKILL = 'SKILL',
+  BEHAVIOUR = 'BEHAVIOUR',
 }

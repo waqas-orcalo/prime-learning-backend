@@ -1,33 +1,37 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
-  MaxLength,
   Min,
-  MinLength,
 } from 'class-validator';
 import {
+  ActionRequiredBy,
   ActivityMethod,
   ActivityType,
+  EvidenceRecording,
   TaskStatus,
 } from '../../../common/constants/enums.constant';
 
 export class CreateLearningActivityDto {
-  @ApiProperty({ example: 'Unit 01 – Introduction to Safeguarding' })
+  @ApiPropertyOptional({ example: 'LA001' })
+  @IsOptional()
   @IsString()
-  @MinLength(3)
-  @MaxLength(255)
+  ref?: string;
+
+  @ApiProperty({ example: 'UI UX Design for Onefile' })
+  @IsString()
   title: string;
 
-  @ApiPropertyOptional({ example: 'Review chapter 3 and complete the quiz' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ enum: ActivityMethod, default: ActivityMethod.ONLINE_COURSE })
+  @ApiPropertyOptional({ enum: ActivityMethod })
   @IsOptional()
   @IsEnum(ActivityMethod)
   method?: ActivityMethod;
@@ -37,24 +41,60 @@ export class CreateLearningActivityDto {
   @IsEnum(ActivityType)
   type?: ActivityType;
 
-  @ApiPropertyOptional({ enum: TaskStatus, default: TaskStatus.PENDING })
+  @ApiPropertyOptional({ enum: TaskStatus })
   @IsOptional()
   @IsEnum(TaskStatus)
   status?: TaskStatus;
 
-  @ApiPropertyOptional({ example: '2025-07-15' })
+  @ApiPropertyOptional({ example: '2025-01-15' })
   @IsOptional()
-  @IsDateString()
-  dueDate?: string;
+  @IsString()
+  activityDate?: string;
 
-  @ApiPropertyOptional({ example: '64f1a2b3c4d5e6f7a8b9c0d1' })
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  trainerTimeMinutes?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  learnerTimeMinutes?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  planOfActivityRef?: string;
+
+  @ApiPropertyOptional({ enum: ActionRequiredBy })
+  @IsOptional()
+  @IsEnum(ActionRequiredBy)
+  actionRequiredBy?: ActionRequiredBy;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  addToShowcase?: boolean;
+
+  @ApiPropertyOptional({ enum: EvidenceRecording })
+  @IsOptional()
+  @IsEnum(EvidenceRecording)
+  evidenceRecording?: EvidenceRecording;
+
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   assignedTo?: string;
 
-  @ApiPropertyOptional({ example: 2.5 })
+  @ApiPropertyOptional()
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  offTheJobHours?: number;
+  @IsString()
+  learnerId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsDateString()
+  dueDate?: string;
 }

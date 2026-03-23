@@ -28,13 +28,31 @@ export class LearningActivitiesService {
     return successResponse(activity, ResponseMessage.CREATED, 201);
   }
 
-  async findAll(page = 1, limit = 10, currentUser: IAuthUser) {
-    const filterQuery =
-      currentUser.role === UserRole.LEARNER
-        ? { createdBy: new Types.ObjectId(currentUser._id), isDeleted: false }
-        : { isDeleted: false };
+  async findAll(
+    page = 1,
+    limit = 10,
+    currentUser: IAuthUser,
+    search?: string,
+    status?: string,
+  ) {
+    const filterQuery: Record<string, any> = { isDeleted: false };
 
-    const { data, total, pages } = await this.activityRepository.paginate({
+    if (currentUser.role === UserRole.LEARNER) {
+      filterQuery.createdBy = new Types.ObjectId(currentUser._id);
+    }
+
+    if (search?.trim()) {
+      filterQuery.$or = [
+        { title: { $regex: search.trim(), $options: 'i' } },
+        { ref: { $regex: search.trim(), $options: 'i' } },
+      ];
+    }
+
+    if (status?.trim()) {
+      filterQuery.status = status.trim().toUpperCase();
+    }
+
+    const { data, total } = await this.activityRepository.paginate({
       filterQuery: filterQuery as any,
       page,
       limit,

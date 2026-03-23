@@ -5,6 +5,9 @@ import { TransportMode, VisitType } from '../../../common/constants/enums.consta
 
 @Schema({ timestamps: true, collection: 'visits' })
 export class Visit extends AbstractSchema {
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'LearningActivity' })
+  learningActivityId?: Types.ObjectId;
+
   @Prop({ enum: VisitType, required: true })
   visitType: VisitType;
 
@@ -21,15 +24,27 @@ export class Visit extends AbstractSchema {
   transportMode?: TransportMode;
 
   @Prop()
+  startLocation?: string;
+
+  @Prop()
+  endLocation?: string;
+
+  @Prop()
   notes?: string;
 
   /** Learner signature (base64 or URL) */
   @Prop()
   learnerSignature?: string;
 
+  @Prop()
+  learnerSignedAt?: Date;
+
   /** Trainer signature */
   @Prop()
   trainerSignature?: string;
+
+  @Prop()
+  trainerSignedAt?: Date;
 
   @Prop({ type: SchemaTypes.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;

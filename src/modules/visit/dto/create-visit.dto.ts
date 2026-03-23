@@ -13,6 +13,11 @@ import {
 } from '../../../common/constants/enums.constant';
 
 export class CreateVisitDto {
+  @ApiPropertyOptional({ description: 'Learning activity this visit relates to' })
+  @IsOptional()
+  @IsString()
+  learningActivityId?: string;
+
   @ApiProperty({ enum: VisitType })
   @IsEnum(VisitType)
   visitType: VisitType;
@@ -37,6 +42,16 @@ export class CreateVisitDto {
   @IsOptional()
   @IsEnum(TransportMode)
   transportMode?: TransportMode;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  startLocation?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  endLocation?: string;
 
   @ApiPropertyOptional({ example: 'Learner is progressing well.' })
   @IsOptional()
