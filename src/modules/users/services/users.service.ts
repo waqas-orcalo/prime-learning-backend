@@ -85,6 +85,14 @@ export class UsersService {
     return successResponse(safe, ResponseMessage.UPDATED);
   }
 
+  /** Find a user by exact email (for admin task-assignment lookup) */
+  async findOneByEmail(email: string) {
+    const user = await this.userRepository.findByEmail(email.toLowerCase());
+    if (!user) throw new NotFoundException(ErrorMessages.USER.NOT_FOUND);
+    const { passwordHash: _pw, ...safe } = user as any;
+    return successResponse(safe);
+  }
+
   /** Admin-only: set a user's password directly (no old password required) */
   async adminResetPassword(id: string, newPassword: string) {
     const passwordHash = await bcrypt.hash(newPassword, 12);

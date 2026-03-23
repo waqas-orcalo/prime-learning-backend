@@ -35,10 +35,10 @@ export class TasksService {
   ) {
     const p = Math.max(1, parseInt(String(page), 10) || 1);
     const l = Math.max(1, parseInt(String(limit), 10) || 10);
-    // Admins see all tasks; learners see only their own
+    // Admins/trainers see all tasks; learners see only tasks assigned to them
     const filterQuery =
       currentUser.role === UserRole.LEARNER
-        ? { createdBy: new Types.ObjectId(currentUser._id), isDeleted: false }
+        ? { assignedTo: new Types.ObjectId(currentUser._id), isDeleted: false }
         : { isDeleted: false };
 
     const { data, total, pages } = await this.taskRepository.paginate({

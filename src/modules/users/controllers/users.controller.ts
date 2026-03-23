@@ -91,6 +91,13 @@ export class UsersController {
     return this.usersService.updateStatus(id, dto);
   }
 
+  @Get('by-email/:email')
+  @Roles(UserRole.TRAINER, UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Find user by exact email (trainer/admin only)' })
+  findByEmail(@Param('email') email: string) {
+    return this.usersService.findOneByEmail(email);
+  }
+
   @Patch(':id/reset-password')
   @Roles(UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'Admin: reset any user password (super admin only)' })
