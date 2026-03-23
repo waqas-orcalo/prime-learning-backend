@@ -42,7 +42,7 @@ export class VisitController {
     return this.visitService.create(dto, user);
   }
 
-  @Get(API_ENDPOINTS.VISIT.GET_ALL)
+  @Get('/list')
   @ApiOperation({ summary: 'Get all visits (filtered by role)' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -52,6 +52,12 @@ export class VisitController {
     @CurrentUser() user: IAuthUser,
   ) {
     return this.visitService.findAll(page, limit, user);
+  }
+
+  @Get('/activity/:activityId')
+  @ApiOperation({ summary: 'Get all visits for a learning activity' })
+  findByActivity(@Param('activityId') activityId: string) {
+    return this.visitService.findByActivity(activityId);
   }
 
   @Get(API_ENDPOINTS.VISIT.GET_ONE)

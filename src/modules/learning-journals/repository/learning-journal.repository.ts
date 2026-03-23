@@ -29,4 +29,12 @@ export class LearningJournalRepository extends AbstractRepository<LearningJourna
       .lean()
       .exec() as any;
   }
+
+  async findByActivity(activityId: string): Promise<LearningJournal[]> {
+    return this.learningJournalModel
+      .find({ learningActivityId: activityId, isDeleted: false })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec() as any;
+  }
 }

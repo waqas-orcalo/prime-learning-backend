@@ -25,17 +25,16 @@ export class VisitService {
   }
 
   async findAll(page = 1, limit = 10, currentUser: IAuthUser) {
-    const filterQuery =
-      currentUser.role === UserRole.LEARNER
-        ? { learnerId: new Types.ObjectId(currentUser._id), isDeleted: false }
-        : { isDeleted: false };
+    const p = Number(page) || 1;
+    const l = Number(limit) || 10;
 
-    const { data, total } = await this.visitRepository.paginate({
-      filterQuery: filterQuery as any,
-      page,
-      limit,
-    });
-    return paginatedResponse(data, total, page, limit);
+    const isLearner = currentUser?.role === UserRole.LEARNER;
+    const learnerId = isLearner ? currentUser._id : undefined;
+
+    const all = await this.visitRepository.findAllVisits(learnerId);
+    const total = all.length;
+    const data = all.slice((p - 1) * l, p * l);
+    return paginatedResponse(data as any, total, p, l);
   }
 
   async findOne(id: string) {
@@ -72,6 +71,11 @@ export class VisitService {
       { $set: { [field]: signatureData } },
     );
     return successResponse(updated, ResponseMessage.UPDATED);
+  }
+
+  async findByActivity(activityId: string) {
+    const visits = await this.visitRepository.findByActivity(activityId);
+    return successResponse(visits);
   }
 
   async remove(id: string) {

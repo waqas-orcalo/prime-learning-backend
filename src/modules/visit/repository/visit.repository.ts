@@ -28,4 +28,22 @@ export class VisitRepository extends AbstractRepository<Visit> {
       .lean()
       .exec() as any;
   }
+
+  async findByActivity(activityId: string): Promise<Visit[]> {
+    return this.visitModel
+      .find({ learningActivityId: activityId, isDeleted: false })
+      .sort({ visitDate: -1 })
+      .lean()
+      .exec() as any;
+  }
+
+  async findAllVisits(learnerId?: string): Promise<Visit[]> {
+    const filter: any = { isDeleted: false };
+    if (learnerId) filter.learnerId = learnerId;
+    return this.visitModel
+      .find(filter)
+      .sort({ visitDate: -1 })
+      .lean()
+      .exec() as any;
+  }
 }

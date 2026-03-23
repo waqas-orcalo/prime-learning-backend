@@ -10,6 +10,11 @@ import {
 import { JournalPrivacy } from '../../../common/constants/enums.constant';
 
 export class CreateLearningJournalDto {
+  @ApiPropertyOptional({ description: 'Learning activity this journal relates to' })
+  @IsOptional()
+  @IsString()
+  learningActivityId?: string;
+
   @ApiProperty({ example: 'Development task 1' })
   @IsString()
   @MinLength(1)

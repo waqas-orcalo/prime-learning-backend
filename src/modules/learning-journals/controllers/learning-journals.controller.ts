@@ -61,6 +61,12 @@ export class LearningJournalsController {
     return this.learningJournalsService.findAll(page, limit, search, privacy, user);
   }
 
+  @Get('/activity/:activityId')
+  @ApiOperation({ summary: 'Get all journal entries for a learning activity' })
+  findByActivity(@Param('activityId') activityId: string) {
+    return this.learningJournalsService.findByActivity(activityId);
+  }
+
   @Get(API_ENDPOINTS.LEARNING_JOURNALS.GET_ONE)
   @ApiOperation({ summary: 'Get a learning journal entry by ID' })
   findOne(@Param('id') id: string) {

@@ -21,6 +21,9 @@ export class LearningJournalsService {
     const journal = await this.journalRepository.create({
       ...dto,
       createdBy: new Types.ObjectId(currentUser._id),
+      ...(dto.learningActivityId
+        ? { learningActivityId: new Types.ObjectId(dto.learningActivityId) }
+        : {}),
     } as any);
     return successResponse(journal, ResponseMessage.CREATED, 201);
   }
@@ -94,6 +97,11 @@ export class LearningJournalsService {
       { $set: dto },
     );
     return successResponse(updated, ResponseMessage.UPDATED);
+  }
+
+  async findByActivity(activityId: string) {
+    const journals = await this.journalRepository.findByActivity(activityId);
+    return successResponse(journals);
   }
 
   async remove(id: string, currentUser: IAuthUser) {
