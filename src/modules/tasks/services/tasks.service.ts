@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, Optional } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { TaskRepository } from '../repository/task.repository';
 import { CreateTaskDto } from '../dto/create-task.dto';
@@ -12,10 +12,15 @@ import {
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
 import { TaskStatus, UserRole } from '../../../common/constants/enums.constant';
 import { TaskPriority } from '../../../common/constants/enums.constant';
+import { NotificationsService } from '../../notifications/services/notifications.service';
+import { NotificationType } from '../../notifications/schemas/notification.schema';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly taskRepository: TaskRepository) {}
+  constructor(
+    private readonly taskRepository: TaskRepository,
+    @Optional() private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(dto: CreateTaskDto, currentUser: IAuthUser) {
     const task = await this.taskRepository.create({
@@ -107,6 +112,15 @@ export class TasksService {
         secondaryMethods: (original as any).secondaryMethods ?? [],
       } as any);
       results.push(task);
+      // Send notification to the assigned user (non-blocking)
+      if (this.notificationsService) {
+        this.notificationsService.createOne(
+          userId,
+          NotificationType.TASK_ASSIGNED,
+          'New Task Assigned',
+          `You have been assigned a new task: "${(original as any).title}"`,
+        ).catch(() => {});
+      }
     }
     return successResponse(results, 'Tasks assigned successfully', 201);
   }

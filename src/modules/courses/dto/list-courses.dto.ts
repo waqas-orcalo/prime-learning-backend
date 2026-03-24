@@ -8,4 +8,5 @@ export class ListCoursesDto {
   @ApiPropertyOptional({ default: 10 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) limit?: number = 10;
   @ApiPropertyOptional() @IsOptional() @IsString() search?: string;
   @ApiPropertyOptional({ enum: CourseStatus }) @IsOptional() @IsEnum(CourseStatus) status?: CourseStatus;
+  @ApiPropertyOptional() @IsOptional() @IsString() enrolledUserId?: string;
 }

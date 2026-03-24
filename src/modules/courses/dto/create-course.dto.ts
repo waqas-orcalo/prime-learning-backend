@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsArray, IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { CourseStatus } from '../../../common/constants/enums.constant';
 
 export class CreateCourseDto {
@@ -10,4 +10,5 @@ export class CreateCourseDto {
   @ApiPropertyOptional() @IsOptional() @IsString() duration?: string;
   @ApiPropertyOptional({ enum: CourseStatus }) @IsOptional() @IsEnum(CourseStatus) status?: CourseStatus;
   @ApiPropertyOptional() @IsOptional() @IsString() thumbnailEmoji?: string;
+  @ApiPropertyOptional() @IsOptional() @IsArray() courseModules?: { name: string; slides: { content: string }[] }[];
 }

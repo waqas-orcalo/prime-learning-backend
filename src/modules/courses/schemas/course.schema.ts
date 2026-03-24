@@ -16,6 +16,11 @@ export class Course extends AbstractSchema {
   @Prop({ default: '📘' }) thumbnailEmoji: string;
   @Prop({ type: Types.ObjectId, ref: 'User', default: null }) createdBy: Types.ObjectId;
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] }) enrolledUsers: Types.ObjectId[];
+  @Prop({
+    type: [{ name: String, slides: [{ content: String }] }],
+    default: [],
+  })
+  courseModules: { name: string; slides: { content: string }[] }[];
   @Prop({ default: false }) isDeleted: boolean;
 }
 
