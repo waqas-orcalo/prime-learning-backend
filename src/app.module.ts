@@ -43,7 +43,9 @@ import { mongoConfig } from './config/mongo.config';
     WinstonModule.forRoot(winstonConfig),
 
     // ── Feature modules ─────────────────────────────────────────────────────
-    // Add every feature module here — each is self-contained
+    // NotificationsModule must come first so it registers as @Global() before
+    // CoursesModule / TasksModule try to inject NotificationsService
+    NotificationsModule,
     AuthModule,
     UsersModule,
     TasksModule,
@@ -61,7 +63,6 @@ import { mongoConfig } from './config/mongo.config';
     DeclarationModule,
     CriteriaModule,
     TimesheetModule,
-    NotificationsModule,
   ],
   providers: [
     // ── Global guard: every route is JWT-protected unless marked @Public() ──
