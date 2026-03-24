@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, Optional } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { TaskRepository } from '../repository/task.repository';
 import { CreateTaskDto } from '../dto/create-task.dto';
@@ -19,7 +19,7 @@ import { NotificationType } from '../../notifications/schemas/notification.schem
 export class TasksService {
   constructor(
     private readonly taskRepository: TaskRepository,
-    private readonly notificationsService: NotificationsService,
+    @Optional() private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(dto: CreateTaskDto, currentUser: IAuthUser) {
@@ -112,13 +112,15 @@ export class TasksService {
         secondaryMethods: (original as any).secondaryMethods ?? [],
       } as any);
       results.push(task);
-      // Send notification to the assigned user
-      await this.notificationsService.createOne(
-        userId,
-        NotificationType.TASK_ASSIGNED,
-        'New Task Assigned',
-        `You have been assigned a new task: "${(original as any).title}"`,
-      ).catch(() => {}); // non-blocking
+      // Send notification to the assigned user (non-blocking)
+      if (this.notificationsService) {
+        this.notificationsService.createOne(
+          userId,
+          NotificationType.TASK_ASSIGNED,
+          'New Task Assigned',
+          `You have been assigned a new task: "${(original as any).title}"`,
+        ).catch(() => {});
+      }
     }
     return successResponse(results, 'Tasks assigned successfully', 201);
   }

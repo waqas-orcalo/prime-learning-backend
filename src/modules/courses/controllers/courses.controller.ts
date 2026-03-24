@@ -70,4 +70,20 @@ export class CoursesController {
   getEnrollments(@Param('id') id: string) {
     return this.coursesService.getEnrollments(id);
   }
+
+  @Get(':id/my-progress')
+  @ApiOperation({ summary: 'Get current user progress for a course' })
+  getMyProgress(@Param('id') id: string, @CurrentUser() user: IAuthUser) {
+    return this.coursesService.getMyProgress(id, user);
+  }
+
+  @Post(':id/complete-slide')
+  @ApiOperation({ summary: 'Mark a slide as completed' })
+  completeSlide(
+    @Param('id') id: string,
+    @Body() body: { slideKey: string },
+    @CurrentUser() user: IAuthUser,
+  ) {
+    return this.coursesService.completeSlide(id, body.slideKey, user);
+  }
 }

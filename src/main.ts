@@ -46,7 +46,7 @@ async function bootstrap() {
   // ── Swagger ───────────────────────────────────────────────────────────────
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Prime Learning API')
-    .setDescription('Monolithic NestJS backend – architecture from AAC-BE-DEV-001')
+    .setDescription('Monolithic NestJS backend – v2-with-notifications')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

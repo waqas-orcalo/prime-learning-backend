@@ -31,8 +31,7 @@ export class NotificationsService {
   async findAllForUser(currentUser: IAuthUser) {
     const notifications = await this.notificationRepository.find(
       { userId: new Types.ObjectId(currentUser._id), isDeleted: false } as any,
-      undefined,
-      { sort: { read: 1, createdAt: -1 }, limit: 50 } as any,
+      { sort: { read: 1, createdAt: -1 }, limit: 50 },
     );
     const unreadCount = notifications.filter((n: any) => !n.read).length;
     return successResponse({ notifications, unreadCount });

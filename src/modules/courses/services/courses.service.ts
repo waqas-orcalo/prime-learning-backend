@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { Injectable, Optional } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { CourseRepository } from '../repository/course.repository';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
@@ -9,16 +10,21 @@ import { paginatedResponse, ResponseMessage, successResponse } from '../../../co
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { NotificationType } from '../../notifications/schemas/notification.schema';
+import { CourseProgress } from '../schemas/course-progress.schema';
 
 @Injectable()
 export class CoursesService {
   constructor(
     private readonly courseRepository: CourseRepository,
-    private readonly notificationsService: NotificationsService,
+    @Optional() private readonly notificationsService: NotificationsService,
+    @InjectModel(CourseProgress.name) private readonly progressModel: Model<CourseProgress>,
   ) {}
 
   async create(dto: CreateCourseDto, currentUser: IAuthUser) {
-    const course = await this.courseRepository.create({ ...dto, createdBy: new Types.ObjectId(currentUser._id) } as any);
+    const payload: any = { ...dto, createdBy: new Types.ObjectId(currentUser._id) };
+    // Auto-calculate modules count from courseModules if provided
+    if (dto.courseModules) payload.modules = dto.courseModules.length;
+    const course = await this.courseRepository.create(payload);
     return successResponse(course, ResponseMessage.CREATED, 201);
   }
 
@@ -36,7 +42,9 @@ export class CoursesService {
   }
 
   async update(id: string, dto: UpdateCourseDto) {
-    const updated = await this.courseRepository.findOneAndUpdate({ _id: id }, { $set: dto });
+    const payload: any = { ...dto };
+    if (dto.courseModules) payload.modules = dto.courseModules.length;
+    const updated = await this.courseRepository.findOneAndUpdate({ _id: id }, { $set: payload });
     return successResponse(updated, ResponseMessage.UPDATED);
   }
 
@@ -51,14 +59,15 @@ export class CoursesService {
       { _id: id },
       { $addToSet: { enrolledUsers: { $each: userObjectIds } } },
     );
-    // Send notification to each enrolled user
-    for (const userId of dto.userIds) {
-      await this.notificationsService.createOne(
-        userId,
-        NotificationType.COURSE_ENROLLED,
-        'New Course Assigned',
-        `You have been enrolled in a new course: "${(updated as any).title}"`,
-      ).catch(() => {}); // non-blocking
+    if (this.notificationsService) {
+      for (const userId of dto.userIds) {
+        this.notificationsService.createOne(
+          userId,
+          NotificationType.COURSE_ENROLLED,
+          'New Course Assigned',
+          `You have been enrolled in a new course: "${(updated as any).title}"`,
+        ).catch(() => {});
+      }
     }
     return successResponse(updated, 'Users enrolled successfully');
   }
@@ -74,5 +83,46 @@ export class CoursesService {
   async getEnrollments(id: string) {
     const course = await this.courseRepository.findByIdWithEnrollments(id);
     return successResponse((course as any)?.enrolledUsers ?? []);
+  }
+
+  /** Get progress for the current user on a specific course */
+  async getMyProgress(courseId: string, currentUser: IAuthUser) {
+    const course = await this.courseRepository.findById(courseId);
+    const totalSlides = ((course as any).courseModules ?? [])
+      .reduce((sum: number, m: any) => sum + (m.slides?.length ?? 0), 0);
+
+    let progress = await this.progressModel.findOne({
+      userId: new Types.ObjectId(currentUser._id),
+      courseId: new Types.ObjectId(courseId),
+    }).lean();
+
+    const completedSlideKeys: string[] = (progress as any)?.completedSlideKeys ?? [];
+    const completedCount = completedSlideKeys.length;
+    const percentage = totalSlides > 0 ? Math.round((completedCount / totalSlides) * 100) : 0;
+
+    return successResponse({ completedSlideKeys, completedCount, totalSlides, percentage });
+  }
+
+  /** Mark a slide as completed for the current user */
+  async completeSlide(courseId: string, slideKey: string, currentUser: IAuthUser) {
+    await this.progressModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(currentUser._id), courseId: new Types.ObjectId(courseId) },
+      { $addToSet: { completedSlideKeys: slideKey } },
+      { upsert: true, new: true },
+    );
+
+    const course = await this.courseRepository.findById(courseId);
+    const totalSlides = ((course as any).courseModules ?? [])
+      .reduce((sum: number, m: any) => sum + (m.slides?.length ?? 0), 0);
+
+    const updated = await this.progressModel.findOne({
+      userId: new Types.ObjectId(currentUser._id),
+      courseId: new Types.ObjectId(courseId),
+    }).lean();
+
+    const completedSlideKeys: string[] = (updated as any)?.completedSlideKeys ?? [];
+    const percentage = totalSlides > 0 ? Math.round((completedSlideKeys.length / totalSlides) * 100) : 0;
+
+    return successResponse({ completedSlideKeys, completedCount: completedSlideKeys.length, totalSlides, percentage });
   }
 }

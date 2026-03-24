@@ -12,7 +12,7 @@ export enum NotificationType {
 @Schema({ timestamps: true, collection: 'notifications' })
 export class Notification extends AbstractSchema {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true }) userId: Types.ObjectId;
-  @Prop({ enum: NotificationType, required: true }) type: NotificationType;
+  @Prop({ type: String, enum: Object.values(NotificationType), required: true }) type: string;
   @Prop({ required: true }) title: string;
   @Prop({ required: true }) message: string;
   @Prop({ default: false }) read: boolean;
