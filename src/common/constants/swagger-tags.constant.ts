@@ -24,4 +24,8 @@ export const API_TAGS = {
   FEEDBACK_COMMENTS: 'Feedback & Comments',
   DECLARATION: 'Declaration & Signatures',
   CRITERIA: 'Criteria',
+  RESOURCES: 'Resources',
+  LEARNER_FEEDBACK: 'Learner Feedback Forms',
+  EXIT_REVIEW:      'Exit Review & Programme Evaluation',
+  LEARNING_SUPPORT: 'Learning Support Forms',
 } as const;

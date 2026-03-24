@@ -177,3 +177,19 @@ export enum CriteriaType {
   SKILL = 'SKILL',
   BEHAVIOUR = 'BEHAVIOUR',
 }
+
+// ── Resources ─────────────────────────────────────────────────────────────────
+export enum ResourceType {
+  DOCUMENT = 'DOCUMENT',
+  VIDEO = 'VIDEO',
+  LINK = 'LINK',
+  TEMPLATE = 'TEMPLATE',
+  PRESENTATION = 'PRESENTATION',
+}
+
+export enum ResourceVisibility {
+  ALL = 'ALL',
+  TRAINER = 'TRAINER',
+  LEARNER = 'LEARNER',
+  ADMIN = 'ADMIN',
+}
