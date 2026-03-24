@@ -22,6 +22,7 @@ import { FeedbackCommentModule } from './modules/feedback-comment/feedback-comme
 import { DeclarationModule } from './modules/declaration/declaration.module';
 import { CriteriaModule } from './modules/criteria/criteria.module';
 import { TimesheetModule } from './modules/timesheet/timesheet.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
@@ -60,6 +61,7 @@ import { mongoConfig } from './config/mongo.config';
     DeclarationModule,
     CriteriaModule,
     TimesheetModule,
+    NotificationsModule,
   ],
   providers: [
     // ── Global guard: every route is JWT-protected unless marked @Public() ──

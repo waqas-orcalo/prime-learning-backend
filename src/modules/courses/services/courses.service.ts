@@ -7,10 +7,15 @@ import { EnrollUsersDto } from '../dto/enroll-users.dto';
 import { ListCoursesDto } from '../dto/list-courses.dto';
 import { paginatedResponse, ResponseMessage, successResponse } from '../../../common/constants/responses.constant';
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
+import { NotificationsService } from '../../notifications/services/notifications.service';
+import { NotificationType } from '../../notifications/schemas/notification.schema';
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly courseRepository: CourseRepository) {}
+  constructor(
+    private readonly courseRepository: CourseRepository,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(dto: CreateCourseDto, currentUser: IAuthUser) {
     const course = await this.courseRepository.create({ ...dto, createdBy: new Types.ObjectId(currentUser._id) } as any);
@@ -18,10 +23,10 @@ export class CoursesService {
   }
 
   async findAll(dto: ListCoursesDto) {
-    const { search, status } = dto;
+    const { search, status, enrolledUserId } = dto;
     const page  = Math.max(1, parseInt(String(dto.page  ?? 1),  10) || 1);
     const limit = Math.max(1, parseInt(String(dto.limit ?? 10), 10) || 10);
-    const { data, total } = await this.courseRepository.findAllPaginated(page, limit, search, status);
+    const { data, total } = await this.courseRepository.findAllPaginated(page, limit, search, status, enrolledUserId);
     return paginatedResponse(data, total, page, limit);
   }
 
@@ -46,6 +51,15 @@ export class CoursesService {
       { _id: id },
       { $addToSet: { enrolledUsers: { $each: userObjectIds } } },
     );
+    // Send notification to each enrolled user
+    for (const userId of dto.userIds) {
+      await this.notificationsService.createOne(
+        userId,
+        NotificationType.COURSE_ENROLLED,
+        'New Course Assigned',
+        `You have been enrolled in a new course: "${(updated as any).title}"`,
+      ).catch(() => {}); // non-blocking
+    }
     return successResponse(updated, 'Users enrolled successfully');
   }
 

@@ -12,10 +12,15 @@ import {
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
 import { TaskStatus, UserRole } from '../../../common/constants/enums.constant';
 import { TaskPriority } from '../../../common/constants/enums.constant';
+import { NotificationsService } from '../../notifications/services/notifications.service';
+import { NotificationType } from '../../notifications/schemas/notification.schema';
 
 @Injectable()
 export class TasksService {
-  constructor(private readonly taskRepository: TaskRepository) {}
+  constructor(
+    private readonly taskRepository: TaskRepository,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(dto: CreateTaskDto, currentUser: IAuthUser) {
     const task = await this.taskRepository.create({
@@ -107,6 +112,13 @@ export class TasksService {
         secondaryMethods: (original as any).secondaryMethods ?? [],
       } as any);
       results.push(task);
+      // Send notification to the assigned user
+      await this.notificationsService.createOne(
+        userId,
+        NotificationType.TASK_ASSIGNED,
+        'New Task Assigned',
+        `You have been assigned a new task: "${(original as any).title}"`,
+      ).catch(() => {}); // non-blocking
     }
     return successResponse(results, 'Tasks assigned successfully', 201);
   }
