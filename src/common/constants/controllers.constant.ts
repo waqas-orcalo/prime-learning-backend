@@ -53,4 +53,12 @@ export const CONTROLLERS = {
 
   // ── Timesheet Entries ──────────────────────────────────────────────────────
   TIMESHEET_ENTRIES: 'learning-activities/timesheet',
+
+  // ── Resources ──────────────────────────────────────────────────────────────
+  RESOURCES: 'resources',
+
+  // ── Forms ──────────────────────────────────────────────────────────────────
+  LEARNER_FEEDBACK:  'forms/learner-feedback',
+  EXIT_REVIEW:       'forms/exit-review',
+  LEARNING_SUPPORT:  'forms/learning-support',
 } as const;

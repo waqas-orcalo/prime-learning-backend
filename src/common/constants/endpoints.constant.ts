@@ -200,4 +200,47 @@ export const API_ENDPOINTS = {
     GET_FOR_ACTIVITY: '/activity/:activityId',
     SET_FOR_ACTIVITY: '/activity/:activityId',
   },
+
+  // ── Resources ──────────────────────────────────────────────────────────────
+  RESOURCES: {
+    GET_ALL: '/',
+    GET_ONE: '/:id',
+    CREATE: '/',
+    UPDATE: '/:id',
+    DELETE: '/:id',
+    TOGGLE_BOOKMARK: '/:id/bookmark',
+    TOGGLE_FEATURED: '/:id/featured',
+    INCREMENT_VIEW: '/:id/view',
+    INCREMENT_DOWNLOAD: '/:id/download',
+  },
+
+  // ── Learner Feedback Form ─────────────────────────────────────────────────
+  LEARNER_FEEDBACK: {
+    GET_ALL:   '/',
+    GET_ONE:   '/:id',
+    CREATE:    '/',
+    UPDATE:    '/:id',
+    DELETE:    '/:id',
+    SIGN:      '/:id/sign',
+  },
+
+  // ── Exit Review & Programme Evaluation ────────────────────────────────────
+  EXIT_REVIEW: {
+    GET_ALL:   '/',
+    GET_ONE:   '/:id',
+    CREATE:    '/',
+    UPDATE:    '/:id',
+    DELETE:    '/:id',
+    SIGN:      '/:id/sign',
+  },
+
+  // ── Learning Support Form ─────────────────────────────────────────────────
+  LEARNING_SUPPORT: {
+    GET_ALL:   '/',
+    GET_ONE:   '/:id',
+    CREATE:    '/',
+    UPDATE:    '/:id',
+    DELETE:    '/:id',
+    SIGN:      '/:id/sign',
+  },
 } as const;
