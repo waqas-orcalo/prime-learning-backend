@@ -247,7 +247,7 @@ export const API_ENDPOINTS = {
     SIGN:      '/:id/sign',
   },
 
-  // ── Trainer ──────────────────────────────────────────────────────────────
+  // ── Trainer ───────────────────────────────────────────────────────────────
   TRAINER: {
     MY_LEARNERS:       'my-learners',
     ASSIGN_LEARNER:    'assign-learner',
@@ -258,5 +258,7 @@ export const API_ENDPOINTS = {
     DASHBOARD_STATS:   'dashboard/stats',
     DASHBOARD_CHARTS:  'dashboard/charts',
     REPORTS:           'reports/:type',
+    TASKS:             'tasks',
   },
-} as const;
+};
+    GET_ONE: 

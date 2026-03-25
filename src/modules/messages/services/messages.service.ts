@@ -12,7 +12,7 @@ import {
   successResponse,
 } from '../../../common/constants/responses.constant';
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
-import { UserStatus } from '../../../common/constants/enums.constant';
+import { UserRole, UserStatus } from '../../../common/constants/enums.constant';
 
 @Injectable()
 export class MessagesService {
@@ -166,9 +166,27 @@ export class MessagesService {
       status: { $nin: [UserStatus.BLOCKED, UserStatus.INACTIVE, UserStatus.DELETED] },
     };
 
+    // Trainers can only start conversations with their assigned learners
+    if (currentUser.role === UserRole.TRAINER) {
+      const trainerObjId = new Types.ObjectId(currentUser._id);
+      filter.$or = [
+        { trainerId: trainerObjId },
+        { assignedTrainerId: trainerObjId },
+      ] as any;
+      // Keep only learners
+      filter.role = UserRole.LEARNER;
+    }
+
     if (search) {
       const regex = { $regex: search, $options: 'i' };
-      filter.$or = [{ firstName: regex }, { lastName: regex }, { email: regex }];
+      const searchOr = [{ firstName: regex }, { lastName: regex }, { email: regex }];
+      // Merge with existing $or if present (trainer case) — wrap in $and
+      if (filter.$or) {
+        filter.$and = [{ $or: filter.$or }, { $or: searchOr }] as any;
+        delete filter.$or;
+      } else {
+        filter.$or = searchOr as any;
+      }
     }
 
     const users = await this.userModel

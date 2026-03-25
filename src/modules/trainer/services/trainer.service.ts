@@ -798,7 +798,6 @@ export class TrainerService {
           status: { $ne: TaskStatus.COMPLETED },
           dueDate: { $lte: now },
         };
-
         const [data, total] = await Promise.all([
           this.taskModel
             .find(taskFilter)
@@ -813,293 +812,52 @@ export class TrainerService {
         return paginatedResponse(data, total, page, limit);
       }
 
-      case 'learners-on-track':
-      case 'learners-on-target': {
-        // Learners with >= 60% task completion
-        const allLearners = await this.userModel
-          .find(learnerFilter, { passwordHash: 0 })
-          .lean();
-        const withProgress = await Promise.all(
-          allLearners.map(async (l) => {
-            const lid = l._id as Types.ObjectId;
-            const [total, completed] = await Promise.all([
-              this.taskModel.countDocuments({
-                $or: [{ assignedTo: lid }, { createdBy: lid }],
-                isDeleted: false,
-              }),
-              this.taskModel.countDocuments({
-                $or: [{ assignedTo: lid }, { createdBy: lid }],
-                isDeleted: false,
-                status: TaskStatus.COMPLETED,
-              }),
-            ]);
-            const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-            return { ...l, progressPercent: pct, totalTasks: total, completedTasks: completed };
-          }),
-        );
-
-        const onTrack = withProgress.filter((l) => l.progressPercent >= 60);
-        const sliced = onTrack.slice((page - 1) * limit, page * limit);
-        return paginatedResponse(sliced, onTrack.length, page, limit);
-      }
-
-      case 'learners-at-risk': {
-        const allLearners = await this.userModel
-          .find(learnerFilter, { passwordHash: 0 })
-          .lean();
-        const withProgress = await Promise.all(
-          allLearners.map(async (l) => {
-            const lid = l._id as Types.ObjectId;
-            const [total, completed] = await Promise.all([
-              this.taskModel.countDocuments({
-                $or: [{ assignedTo: lid }, { createdBy: lid }],
-                isDeleted: false,
-              }),
-              this.taskModel.countDocuments({
-                $or: [{ assignedTo: lid }, { createdBy: lid }],
-                isDeleted: false,
-                status: TaskStatus.COMPLETED,
-              }),
-            ]);
-            const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-            return { ...l, progressPercent: pct, totalTasks: total, completedTasks: completed };
-          }),
-        );
-
-        const atRisk = withProgress.filter((l) => l.progressPercent < 30);
-        const sliced = atRisk.slice((page - 1) * limit, page * limit);
-        return paginatedResponse(sliced, atRisk.length, page, limit);
-      }
-
-      case 'planned-visits': {
-        // Planned visits = tasks with a future dueDate that are not yet completed
-        const learnerIds = await this.getMyLearnerIds(currentUser._id);
-        const now = new Date();
-        const thirtyDaysFromNow = new Date();
-        thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-
-        const taskFilter: any = {
-          $or: learnerIds.flatMap((id) => [
-            { assignedTo: id },
-            { createdBy: id },
-          ]),
-          isDeleted: false,
-          status: { $ne: TaskStatus.COMPLETED },
-          dueDate: { $gte: now, $lte: thirtyDaysFromNow },
-        };
-        if (dto.from) taskFilter.dueDate = { ...taskFilter.dueDate, $gte: new Date(dto.from) };
-        if (dto.to) taskFilter.dueDate = { ...taskFilter.dueDate, $lte: new Date(dto.to) };
-
-        const [data, total] = await Promise.all([
-          this.taskModel
-            .find(taskFilter)
-            .populate('assignedTo', 'firstName lastName email programme employer')
-            .populate('createdBy', 'firstName lastName email')
-            .sort({ dueDate: 1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .lean(),
-          this.taskModel.countDocuments(taskFilter),
-        ]);
-
-        // Enrich with learner progress
-        const enriched = await Promise.all(
-          data.map(async (task: any) => {
-            const learner = task.assignedTo || task.createdBy;
-            const lid = learner?._id;
-            let expectedProgress = 0;
-            if (lid) {
-              const [totalT, completedT] = await Promise.all([
-                this.taskModel.countDocuments({
-                  $or: [{ assignedTo: lid }, { createdBy: lid }],
-                  isDeleted: false,
-                }),
-                this.taskModel.countDocuments({
-                  $or: [{ assignedTo: lid }, { createdBy: lid }],
-                  isDeleted: false,
-                  status: TaskStatus.COMPLETED,
-                }),
-              ]);
-              expectedProgress = totalT > 0 ? Math.round((completedT / totalT) * 100) : 0;
-            }
-            return {
-              ...task,
-              visitType: task.primaryMethod || 'Face-to-face',
-              location: learner?.employer || 'Default Placement',
-              expectedProgress,
-            };
-          }),
-        );
-
-        return paginatedResponse(enriched, total, page, limit);
-      }
-
-      case 'learners-on-target-otj': {
-        // OTJ target report: learners with their off-the-job hours vs target
-        const allLearners = await this.userModel
-          .find(learnerFilter, { passwordHash: 0 })
-          .lean();
-
-        const withOTJ = await Promise.all(
-          allLearners.map(async (l) => {
-            const lid = l._id as Types.ObjectId;
-
-            // Get all OTJ activities for this learner
-            const otjActivities = await this.activityModel
-              .find({
-                $or: [{ createdBy: lid }, { learnerId: lid }, { assignedTo: lid }],
-                isDeleted: false,
-                type: 'OFF_THE_JOB',
-              })
-              .lean();
-
-            const actualOTJHours = otjActivities.reduce(
-              (sum, a) => sum + (a.offTheJobHours || 0),
-              0,
-            );
-
-            // Get all planned activities (any status) for planned hours
-            const allActivities = await this.activityModel
-              .find({
-                $or: [{ createdBy: lid }, { learnerId: lid }, { assignedTo: lid }],
-                isDeleted: false,
-              })
-              .lean();
-
-            const plannedOTJHours = allActivities
-              .filter((a) => a.type === 'OFF_THE_JOB')
-              .reduce((sum, a) => sum + (a.offTheJobHours || 0), 0);
-
-            // Target OTJ hours: use a default of 20% of total programme hours (commonly ~100h)
-            const targetOTJHours = 100;
-            // Expected OTJ hours based on time elapsed (proportional)
-            const expectedOTJHrs = targetOTJHours; // simplified: full target
-            const deviation = actualOTJHours - expectedOTJHrs;
-            const targetDeviation = actualOTJHours - targetOTJHours;
-
-            return {
-              ...l,
-              className: (l as any).programme || '–',
-              placement: (l as any).employer || 'Default Placement',
-              targetOTJHours,
-              assessorName: '–',
-              plannedOTJHours: plannedOTJHours || targetOTJHours,
-              actualOTJHours,
-              expectedOTJHrs,
-              deviation,
-              targetDeviation,
-            };
-          }),
-        );
-
-        const sliced = withOTJ.slice((page - 1) * limit, page * limit);
-        return paginatedResponse(sliced, withOTJ.length, page, limit);
-      }
-
-      case 'no-otj-activity': {
-        // Learners who have had no OTJ activity (OFF_THE_JOB type)
-        const allLearners = await this.userModel
-          .find(learnerFilter, { passwordHash: 0 })
-          .lean();
-
-        const withActivity = await Promise.all(
-          allLearners.map(async (l) => {
-            const lid = l._id as Types.ObjectId;
-
-            // Find the most recent OTJ activity
-            const lastOTJ = await this.activityModel
-              .findOne({
-                $or: [{ createdBy: lid }, { learnerId: lid }, { assignedTo: lid }],
-                isDeleted: false,
-                type: 'OFF_THE_JOB',
-              })
-              .sort({ updatedAt: -1 })
-              .lean();
-
-            // Find the most recent learning activity of any type
-            const lastActivity = await this.activityModel
-              .findOne({
-                $or: [{ createdBy: lid }, { learnerId: lid }, { assignedTo: lid }],
-                isDeleted: false,
-              })
-              .sort({ updatedAt: -1 })
-              .lean();
-
-            // Find last completed task (as proxy for progress review)
-            const lastCompletedTask = await this.taskModel
-              .findOne({
-                $or: [{ assignedTo: lid }, { createdBy: lid }],
-                isDeleted: false,
-                status: TaskStatus.COMPLETED,
-              })
-              .sort({ updatedAt: -1 })
-              .lean();
-
-            // Calculate progress
-            const [totalTasks, completedTasks] = await Promise.all([
-              this.taskModel.countDocuments({
-                $or: [{ assignedTo: lid }, { createdBy: lid }],
-                isDeleted: false,
-              }),
-              this.taskModel.countDocuments({
-                $or: [{ assignedTo: lid }, { createdBy: lid }],
-                isDeleted: false,
-                status: TaskStatus.COMPLETED,
-              }),
-            ]);
-            const progressPercent =
-              totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-            const lastOTJDate = (lastOTJ as any)?.updatedAt || (lastOTJ as any)?.createdAt || null;
-            const daysSinceOTJ = lastOTJDate
-              ? Math.floor(
-                  (Date.now() - new Date(lastOTJDate as any).getTime()) / (1000 * 60 * 60 * 24),
-                )
-              : null;
-
-            return {
-              ...l,
-              uln: (l as any).uln || '–',
-              mainLearningAim: (l as any).programme || '–',
-              learnerStatus: (l as any).status || 'Active',
-              progressGrade:
-                progressPercent >= 60
-                  ? 'On Track'
-                  : progressPercent >= 30
-                    ? 'Behind'
-                    : 'At Risk',
-              lastLearningActivityDate: (lastActivity as any)?.updatedAt
-                ? new Date((lastActivity as any).updatedAt).toISOString().split('T')[0]
-                : '–',
-              lastLearningActivityPlanDate: lastActivity?.dueDate
-                ? new Date(lastActivity.dueDate).toISOString().split('T')[0]
-                : '–',
-              lastCompletedProgressReviewDate: (lastCompletedTask as any)?.updatedAt
-                ? new Date((lastCompletedTask as any).updatedAt).toISOString().split('T')[0]
-                : '–',
-              lastOTJActivity: lastOTJDate
-                ? new Date(lastOTJDate as any).toISOString().split('T')[0]
-                : 'Never',
-              daysSinceOTJActivity: daysSinceOTJ ?? 'N/A',
-              breakInLearning: daysSinceOTJ !== null && daysSinceOTJ > 28 ? 'Yes' : 'No',
-            };
-          }),
-        );
-
-        // Filter: only show learners with no recent OTJ or never had OTJ
-        const noOTJ = withActivity.filter((l) => {
-          if (l.lastOTJActivity === 'Never') return true;
-          // Also include learners who haven't had OTJ in > 4 weeks
-          const days = typeof l.daysSinceOTJActivity === 'number' ? l.daysSinceOTJActivity : Infinity;
-          return days > 28;
-        });
-
-        const sliced = noOTJ.slice((page - 1) * limit, page * limit);
-        return paginatedResponse(sliced, noOTJ.length, page, limit);
-      }
-
       default:
         throw new BadRequestException(`Unknown report type: ${type}`);
     }
+  }
+
+  // ── Trainer-scoped Tasks ──────────────────────────────────────────────────
+
+  async getMyTasks(
+    page: number = 1,
+    limit: number = 20,
+    status: string | undefined,
+    currentUser: IAuthUser,
+  ) {
+    const p = Math.max(1, parseInt(String(page), 10) || 1);
+    const l = Math.max(1, parseInt(String(limit), 10) || 20);
+
+    const learnerIds = await this.getMyLearnerIds(currentUser._id);
+    const trainerId = new Types.ObjectId(currentUser._id);
+
+    // Show tasks assigned to or created by the trainer's learners, OR assigned to the trainer
+    const ownerIds = [trainerId, ...learnerIds];
+
+    const filterQuery: any = {
+      $or: ownerIds.flatMap((id) => [
+        { assignedTo: id },
+        { createdBy: id },
+      ]),
+      isDeleted: false,
+    };
+
+    if (status) {
+      filterQuery.status = status;
+    }
+
+    const [data, total] = await Promise.all([
+      this.taskModel
+        .find(filterQuery)
+        .populate('assignedTo', 'firstName lastName email')
+        .populate('createdBy', 'firstName lastName email')
+        .sort({ createdAt: -1 })
+        .skip((p - 1) * l)
+        .limit(l)
+        .lean(),
+      this.taskModel.countDocuments(filterQuery),
+    ]);
+
+    return paginatedResponse(data, total, p, l);
   }
 }

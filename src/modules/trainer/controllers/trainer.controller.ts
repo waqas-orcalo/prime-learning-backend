@@ -110,6 +110,19 @@ export class TrainerController {
     return this.trainerService.getDashboardCharts(user);
   }
 
+  // ── Trainer-scoped Tasks ─────────────────────────────────────────────────
+
+  @Get(API_ENDPOINTS.TRAINER.TASKS)
+  @ApiOperation({ summary: 'Get tasks scoped to the trainer\'s assigned learners' })
+  getMyTasks(
+    @Query('page') page: number,
+    @Query('limit') limit: number,
+    @Query('status') status: string,
+    @CurrentUser() user: IAuthUser,
+  ) {
+    return this.trainerService.getMyTasks(page, limit, status, user);
+  }
+
   // ── Reports ───────────────────────────────────────────────────────────────
 
   @Get(API_ENDPOINTS.TRAINER.REPORTS)

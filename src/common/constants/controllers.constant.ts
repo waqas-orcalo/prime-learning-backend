@@ -62,6 +62,6 @@ export const CONTROLLERS = {
   EXIT_REVIEW:       'forms/exit-review',
   LEARNING_SUPPORT:  'forms/learning-support',
 
-  // ── Trainer ──────────────────────────────────────────────────────────────
+  // ── Trainer ────────────────────────────────────────────────────────────────
   TRAINER: 'trainer',
-} as const;
+};
