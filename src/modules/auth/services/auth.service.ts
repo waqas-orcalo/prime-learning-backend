@@ -149,4 +149,5 @@ export class AuthService {
 
     return successResponse(null, ResponseMessage.PASSWORD_CHANGED);
   }
+
 }
