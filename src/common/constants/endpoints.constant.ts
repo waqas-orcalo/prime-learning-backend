@@ -172,6 +172,8 @@ export const API_ENDPOINTS = {
     ENROLL: '/:id/enroll',
     ENROLLMENTS: '/:id/enrollments',
     UNENROLL: '/:id/enroll/:userId',
+    ASSIGN_TRAINERS: '/:id/assign-trainers',
+    REVOKE_TRAINER: '/:id/assign-trainers/:trainerId',
   },
 
   // ── Feedback & Comments ───────────────────────────────────────────────────
@@ -212,6 +214,7 @@ export const API_ENDPOINTS = {
     TOGGLE_FEATURED: '/:id/featured',
     INCREMENT_VIEW: '/:id/view',
     INCREMENT_DOWNLOAD: '/:id/download',
+    SHARE: '/:id/share',
   },
 
   // ── Learner Feedback Form ─────────────────────────────────────────────────
@@ -242,5 +245,17 @@ export const API_ENDPOINTS = {
     UPDATE:    '/:id',
     DELETE:    '/:id',
     SIGN:      '/:id/sign',
+  },
+
+  // ── Trainer ──────────────────────────────────────────────────────────────
+  TRAINER: {
+    MY_LEARNERS:       'my-learners',
+    ASSIGN_LEARNER:    'assign-learner',
+    UNASSIGN_LEARNER:  'unassign-learner/:learnerId',
+    LEARNER_DETAIL:    'learner/:learnerId',
+    LEARNER_PORTFOLIO: 'learner/:learnerId/portfolio',
+    LEARNER_PROGRESS:  'learner/:learnerId/progress',
+    DASHBOARD_STATS:   'dashboard/stats',
+    REPORTS:           'reports/:type',
   },
 } as const;

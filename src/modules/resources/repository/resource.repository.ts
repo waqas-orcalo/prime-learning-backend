@@ -26,17 +26,41 @@ export class ResourceRepository extends AbstractRepository<Resource> {
       visibility?: ResourceVisibility;
       featured?: boolean;
       bookmarkedByUserId?: string;
+      /** Scope results to resources this user can see (own + shared). Admins skip this. */
+      accessUserId?: string;
+      /** If true, bypass per-user access scoping (used for admins) */
+      skipAccessFilter?: boolean;
     } = {},
   ) {
     const filterQuery: Record<string, any> = { isDeleted: false };
 
-    if (options.search) {
+    // ── Access control: only show resources the user owns or that are shared with them ──
+    if (!options.skipAccessFilter && options.accessUserId) {
+      const uid = new Types.ObjectId(options.accessUserId);
       filterQuery.$or = [
+        { uploadedBy: uid },
+        { sharedWith: uid },
+      ];
+    }
+
+    if (options.search) {
+      // Merge search $or with the access $or via $and
+      const searchConditions = [
         { title:       { $regex: options.search, $options: 'i' } },
         { description: { $regex: options.search, $options: 'i' } },
         { tags:        { $regex: options.search, $options: 'i' } },
         { category:    { $regex: options.search, $options: 'i' } },
       ];
+      if (filterQuery.$or) {
+        // Combine access filter + search filter via $and
+        filterQuery.$and = [
+          { $or: filterQuery.$or },
+          { $or: searchConditions },
+        ];
+        delete filterQuery.$or;
+      } else {
+        filterQuery.$or = searchConditions;
+      }
     }
 
     if (options.type)       filterQuery.type       = options.type;
@@ -93,6 +117,29 @@ export class ResourceRepository extends AbstractRepository<Resource> {
         .findByIdAndUpdate(resourceId, { $addToSet: { bookmarkedBy: userObjId } }, { new: true, lean: true })
         .exec();
     }
+  }
+
+  /** Add userIds to the sharedWith array (idempotent - uses $addToSet) */
+  async shareWithUsers(resourceId: string, userIds: string[]) {
+    const objIds = userIds.map((id) => new Types.ObjectId(id));
+    return this.resourceModel
+      .findByIdAndUpdate(
+        resourceId,
+        { $addToSet: { sharedWith: { $each: objIds } } },
+        { new: true, lean: true },
+      )
+      .exec();
+  }
+
+  /** Remove a userId from sharedWith (revoke access) */
+  async revokeShare(resourceId: string, userId: string) {
+    return this.resourceModel
+      .findByIdAndUpdate(
+        resourceId,
+        { $pull: { sharedWith: new Types.ObjectId(userId) } },
+        { new: true, lean: true },
+      )
+      .exec();
   }
 
   async incrementViews(id: string) {

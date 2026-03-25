@@ -28,4 +28,5 @@ export const API_TAGS = {
   LEARNER_FEEDBACK: 'Learner Feedback Forms',
   EXIT_REVIEW:      'Exit Review & Programme Evaluation',
   LEARNING_SUPPORT: 'Learning Support Forms',
+  TRAINER: 'Trainer',
 } as const;

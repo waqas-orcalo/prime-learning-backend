@@ -67,8 +67,8 @@ export class UsersController {
   }
 
   @Get(API_ENDPOINTS.USERS.GET_ALL)
-  @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
-  @ApiOperation({ summary: 'List all users (admin only)' })
+  @Roles(UserRole.TRAINER, UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'List all users (trainer/admin)' })
   findAll(@Query() dto: ListUsersDto) {
     return this.usersService.findAll(dto);
   }

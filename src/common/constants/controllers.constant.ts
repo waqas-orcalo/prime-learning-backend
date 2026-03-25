@@ -61,4 +61,7 @@ export const CONTROLLERS = {
   LEARNER_FEEDBACK:  'forms/learner-feedback',
   EXIT_REVIEW:       'forms/exit-review',
   LEARNING_SUPPORT:  'forms/learning-support',
+
+  // ── Trainer ──────────────────────────────────────────────────────────────
+  TRAINER: 'trainer',
 } as const;

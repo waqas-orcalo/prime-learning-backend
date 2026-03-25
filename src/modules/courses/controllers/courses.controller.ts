@@ -11,6 +11,7 @@ import { UpdateCourseDto } from '../dto/update-course.dto';
 import { EnrollUsersDto } from '../dto/enroll-users.dto';
 import { EnrollGroupDto } from '../dto/enroll-group.dto';
 import { ListCoursesDto } from '../dto/list-courses.dto';
+import { AssignTrainersDto } from '../dto/assign-trainers.dto';
 
 @ApiTags(API_TAGS.COURSES)
 @ApiBearerAuth()
@@ -27,9 +28,9 @@ export class CoursesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all courses' })
-  findAll(@Query() dto: ListCoursesDto) {
-    return this.coursesService.findAll(dto);
+  @ApiOperation({ summary: 'List all courses (trainers see only their own + admin-assigned)' })
+  findAll(@Query() dto: ListCoursesDto, @CurrentUser() user: IAuthUser) {
+    return this.coursesService.findAll(dto, user);
   }
 
   @Get(':id')
@@ -71,6 +72,30 @@ export class CoursesController {
   @ApiOperation({ summary: 'Unenroll a user from a course' })
   unenroll(@Param('id') id: string, @Param('userId') userId: string) {
     return this.coursesService.unenroll(id, userId);
+  }
+
+  // ── Trainer access management (admin only) ────────────────────────────────
+
+  @Post(API_ENDPOINTS.COURSES.ASSIGN_TRAINERS)
+  @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Assign trainers to a course so they can see and manage it' })
+  assignTrainers(
+    @Param('id') id: string,
+    @Body() dto: AssignTrainersDto,
+    @CurrentUser() user: IAuthUser,
+  ) {
+    return this.coursesService.assignTrainers(id, dto, user);
+  }
+
+  @Delete(API_ENDPOINTS.COURSES.REVOKE_TRAINER)
+  @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Revoke a trainer\'s access to a course' })
+  revokeTrainer(
+    @Param('id') id: string,
+    @Param('trainerId') trainerId: string,
+    @CurrentUser() user: IAuthUser,
+  ) {
+    return this.coursesService.revokeTrainer(id, trainerId, user);
   }
 
   @Get(':id/enrollments')
