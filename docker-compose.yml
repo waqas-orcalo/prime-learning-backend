@@ -1,0 +1,54 @@
+version: '3.9'
+
+services:
+  # ── MongoDB ──────────────────────────────────────────────────────────────────
+  mongo:
+    image: mongo:7
+    container_name: prime_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS:-adminpass}
+      MONGO_INITDB_DATABASE: prime_learning
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - '27017:27017'          # expose to host (remove in production)
+    networks:
+      - prime_net
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── NestJS API ───────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: prime_api
+    restart: unless-stopped
+    env_file:
+      - .env                   # copy .env.example → .env and fill in values
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      MONGO_URI: mongodb://${MONGO_ROOT_USER:-admin}:${MONGO_ROOT_PASS:-adminpass}@mongo:27017/prime_learning?authSource=admin
+    ports:
+      - '${API_PORT:-3000}:3000'
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - prime_net
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  prime_net:
+    driver: bridge
