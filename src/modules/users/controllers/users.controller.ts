@@ -119,4 +119,36 @@ export class UsersController {
   ) {
     return this.usersService.adminResetPassword(id, body.newPassword);
   }
+
+  // ── Trainer-assignment routes (must come BEFORE /:id to avoid conflicts) ──
+  @Get('trainer/my-learners')
+  @Roles(UserRole.TRAINER, UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Trainer: get all learners assigned to me' })
+  getMyLearners(@CurrentUser() user: IAuthUser) {
+    return this.usersService.getMyLearners(user);
+  }
+
+  @Get('trainer/all-trainers')
+  @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Admin: list all trainers' })
+  getTrainers() {
+    return this.usersService.getTrainers();
+  }
+
+  @Get('trainer/:trainerId/learners')
+  @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Admin: get learners assigned to a specific trainer' })
+  getLearnersByTrainer(@Param('trainerId') trainerId: string) {
+    return this.usersService.getLearnersByTrainer(trainerId);
+  }
+
+  @Patch(':id/assign-trainer')
+  @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Admin: assign a learner to a trainer (pass null trainerId to unassign)' })
+  assignTrainer(
+    @Param('id') id: string,
+    @Body() body: { trainerId: string | null },
+  ) {
+    return this.usersService.assignTrainer(id, body.trainerId);
+  }
 }

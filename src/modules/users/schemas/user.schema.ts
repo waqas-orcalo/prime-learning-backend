@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { AbstractSchema } from '../../../database/schemas/abstract/abstract.schema';
 import { UserRole, UserStatus } from '../../../common/constants/enums.constant';
 
@@ -77,6 +77,11 @@ export class User extends AbstractSchema {
 
   @Prop({ default: null })
   homeAddress: string | null;
+
+  // ── Trainer assignment ────────────────────────────────────────────────────
+  /** The trainer (TRAINER role user) this learner is assigned to */
+  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  assignedTrainerId: Types.ObjectId | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

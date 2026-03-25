@@ -17,10 +17,24 @@ export class Course extends AbstractSchema {
   @Prop({ type: Types.ObjectId, ref: 'User', default: null }) createdBy: Types.ObjectId;
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] }) enrolledUsers: Types.ObjectId[];
   @Prop({
-    type: [{ name: String, slides: [{ content: String }] }],
+    type: [{
+      name: String,
+      slides: [{ content: String }],
+      quiz: {
+        passingScore: { type: Number, default: 70 },
+        questions: [{ question: String, options: [String], correctIndex: Number, explanation: String }],
+      },
+    }],
     default: [],
   })
-  courseModules: { name: string; slides: { content: string }[] }[];
+  courseModules: {
+    name: string;
+    slides: { content: string }[];
+    quiz?: {
+      passingScore?: number;
+      questions: { question: string; options: string[]; correctIndex: number; explanation?: string }[];
+    };
+  }[];
   @Prop({ default: false }) isDeleted: boolean;
 }
 
