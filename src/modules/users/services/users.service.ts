@@ -126,4 +126,44 @@ export class UsersService {
     const { passwordHash: _pw, ...safe } = updated as any;
     return successResponse(safe, 'Password reset successfully');
   }
+
+  /** Admin: assign a learner to a specific trainer (or null to unassign) */
+  async assignTrainer(learnerId: string, trainerId: string | null) {
+    const updated = await this.userRepository.findOneAndUpdate(
+      { _id: learnerId },
+      { $set: { assignedTrainerId: trainerId ?? null } },
+    );
+    const { passwordHash: _pw, ...safe } = updated as any;
+    return successResponse(safe, 'Trainer assigned successfully');
+  }
+
+  /** Trainer: get all learners assigned to me */
+  async getMyLearners(currentUser: IAuthUser) {
+    const docs = await (this.userRepository as any).model
+      .find({ assignedTrainerId: currentUser._id, role: UserRole.LEARNER })
+      .lean()
+      .exec();
+    const safe = docs.map(({ passwordHash: _pw, ...u }: any) => u);
+    return successResponse(safe);
+  }
+
+  /** Admin: get all learners assigned to a specific trainer */
+  async getLearnersByTrainer(trainerId: string) {
+    const docs = await (this.userRepository as any).model
+      .find({ assignedTrainerId: trainerId, role: UserRole.LEARNER })
+      .lean()
+      .exec();
+    const safe = docs.map(({ passwordHash: _pw, ...u }: any) => u);
+    return successResponse(safe);
+  }
+
+  /** Admin: get all trainers */
+  async getTrainers() {
+    const docs = await (this.userRepository as any).model
+      .find({ role: UserRole.TRAINER })
+      .lean()
+      .exec();
+    const safe = docs.map(({ passwordHash: _pw, ...u }: any) => u);
+    return successResponse(safe);
+  }
 }
