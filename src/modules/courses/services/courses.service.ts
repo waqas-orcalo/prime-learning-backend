@@ -1,21 +1,24 @@
-import { Injectable, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CourseRepository } from '../repository/course.repository';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
 import { EnrollUsersDto } from '../dto/enroll-users.dto';
+import { EnrollGroupDto } from '../dto/enroll-group.dto';
 import { ListCoursesDto } from '../dto/list-courses.dto';
 import { paginatedResponse, ResponseMessage, successResponse } from '../../../common/constants/responses.constant';
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { NotificationType } from '../../notifications/schemas/notification.schema';
 import { CourseProgress } from '../schemas/course-progress.schema';
+import { GroupRepository } from '../../groups/repository/group.repository';
 
 @Injectable()
 export class CoursesService {
   constructor(
     private readonly courseRepository: CourseRepository,
+    private readonly groupRepository: GroupRepository,
     @Optional() private readonly notificationsService: NotificationsService,
     @InjectModel(CourseProgress.name) private readonly progressModel: Model<CourseProgress>,
   ) {}
@@ -70,6 +73,41 @@ export class CoursesService {
       }
     }
     return successResponse(updated, 'Users enrolled successfully');
+  }
+
+  async enrollGroup(courseId: string, dto: EnrollGroupDto) {
+    const group = await this.groupRepository.findById(dto.groupId);
+    if (!group || (group as any).isDeleted) throw new NotFoundException('Group not found');
+
+    const memberIds = ((group as any).members as any[]).map((m: any) =>
+      typeof m === 'object' && m._id ? String(m._id) : String(m),
+    );
+
+    if (memberIds.length === 0) {
+      return successResponse(null, 'Group has no members to enroll');
+    }
+
+    const memberObjectIds = memberIds.map(id => new Types.ObjectId(id));
+    const updated = await this.courseRepository.findOneAndUpdate(
+      { _id: courseId },
+      { $addToSet: { enrolledUsers: { $each: memberObjectIds } } },
+    );
+
+    if (this.notificationsService) {
+      for (const userId of memberIds) {
+        this.notificationsService.createOne(
+          userId,
+          NotificationType.COURSE_ENROLLED,
+          'New Course Assigned',
+          `You have been enrolled in a new course: "${(updated as any).title}"`,
+        ).catch(() => {});
+      }
+    }
+
+    return successResponse(
+      { enrolledCount: memberIds.length, groupName: (group as any).name },
+      `${memberIds.length} group member(s) enrolled successfully`,
+    );
   }
 
   async unenroll(courseId: string, userId: string) {

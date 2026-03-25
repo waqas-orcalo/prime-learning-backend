@@ -21,7 +21,7 @@ export class CriteriaController {
 
   @Get('/')
   @ApiOperation({ summary: 'Get all criteria' })
-  findAll(@Query('page') page: number, @Query('limit') limit: number) {
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
     return this.service.findAll(page, limit);
   }
 

@@ -5,6 +5,7 @@ import { CourseProgress, CourseProgressSchema } from './schemas/course-progress.
 import { CourseRepository } from './repository/course.repository';
 import { CoursesService } from './services/courses.service';
 import { CoursesController } from './controllers/courses.controller';
+import { GroupsModule } from '../groups/groups.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { CoursesController } from './controllers/courses.controller';
       { name: Course.name, schema: CourseSchema },
       { name: CourseProgress.name, schema: CourseProgressSchema },
     ]),
+    GroupsModule,
   ],
   controllers: [CoursesController],
   providers: [CoursesService, CourseRepository],

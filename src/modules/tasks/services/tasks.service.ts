@@ -62,9 +62,10 @@ export class TasksService {
   async update(id: string, dto: UpdateTaskDto, currentUser: IAuthUser) {
     const task = await this.taskRepository.findById(id);
 
-    // Learners can only update their own tasks
+    // Learners can only update tasks assigned to them or created by them
     if (
       currentUser.role === UserRole.LEARNER &&
+      String((task as any).assignedTo) !== currentUser._id &&
       String((task as any).createdBy) !== currentUser._id
     ) {
       throw new ForbiddenException('You can only update your own tasks.');

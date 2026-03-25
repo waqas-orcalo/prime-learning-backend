@@ -9,6 +9,7 @@ import { CoursesService } from '../services/courses.service';
 import { CreateCourseDto } from '../dto/create-course.dto';
 import { UpdateCourseDto } from '../dto/update-course.dto';
 import { EnrollUsersDto } from '../dto/enroll-users.dto';
+import { EnrollGroupDto } from '../dto/enroll-group.dto';
 import { ListCoursesDto } from '../dto/list-courses.dto';
 
 @ApiTags(API_TAGS.COURSES)
@@ -56,6 +57,13 @@ export class CoursesController {
   @ApiOperation({ summary: 'Enroll users in a course' })
   enroll(@Param('id') id: string, @Body() dto: EnrollUsersDto) {
     return this.coursesService.enroll(id, dto);
+  }
+
+  @Post(':id/enroll-group')
+  @Roles(UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN, UserRole.TRAINER)
+  @ApiOperation({ summary: 'Enroll all members of a group in a course' })
+  enrollGroup(@Param('id') id: string, @Body() dto: EnrollGroupDto) {
+    return this.coursesService.enrollGroup(id, dto);
   }
 
   @Delete(':id/enroll/:userId')

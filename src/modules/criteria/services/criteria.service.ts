@@ -20,15 +20,17 @@ export class CriteriaService {
     return successResponse(item, ResponseMessage.CREATED, 201);
   }
 
-  async findAll(page = 1, limit = 50) {
+  async findAll(page?: number, limit?: number) {
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeLimit = Math.max(1, Number(limit) || 50);
     const { data, total } = await this.criteriaRepo.paginate({
       filterQuery: {} as any,
-      page,
-      limit,
+      page: safePage,
+      limit: safeLimit,
       sortBy: 'code',
       sortOrder: 1,
     });
-    return paginatedResponse(data, total, page, limit);
+    return paginatedResponse(data, total, safePage, safeLimit);
   }
 
   async findOne(id: string) {

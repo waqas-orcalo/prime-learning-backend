@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery, UpdateQuery } from 'mongoose';
+import { Model, FilterQuery, UpdateQuery, Types } from 'mongoose';
 import { Notification } from '../schemas/notification.schema';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class NotificationRepository {
   ) {}
 
   async create(doc: Partial<Notification>): Promise<Notification> {
-    const created = new this.model(doc);
+    const created = new this.model({ _id: new Types.ObjectId(), ...doc });
     return created.save() as unknown as Notification;
   }
 
