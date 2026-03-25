@@ -261,4 +261,3 @@ export const API_ENDPOINTS = {
     TASKS:             'tasks',
   },
 };
-    GET_ONE: 
