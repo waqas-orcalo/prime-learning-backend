@@ -11,6 +11,7 @@ import {
   LearningJournalSchema,
 } from '../learning-journals/schemas/learning-journal.schema';
 import { Message, MessageSchema } from '../messages/schemas/message.schema';
+import { Course, CourseSchema } from '../courses/schemas/course.schema';
 import { TrainerController } from './controllers/trainer.controller';
 import { TrainerService } from './services/trainer.service';
 
@@ -22,6 +23,7 @@ import { TrainerService } from './services/trainer.service';
       { name: LearningActivity.name, schema: LearningActivitySchema },
       { name: LearningJournal.name, schema: LearningJournalSchema },
       { name: Message.name, schema: MessageSchema },
+      { name: Course.name, schema: CourseSchema },
     ]),
   ],
   controllers: [TrainerController],

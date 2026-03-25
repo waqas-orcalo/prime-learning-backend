@@ -256,6 +256,7 @@ export const API_ENDPOINTS = {
     LEARNER_PORTFOLIO: 'learner/:learnerId/portfolio',
     LEARNER_PROGRESS:  'learner/:learnerId/progress',
     DASHBOARD_STATS:   'dashboard/stats',
+    DASHBOARD_CHARTS:  'dashboard/charts',
     REPORTS:           'reports/:type',
   },
 } as const;

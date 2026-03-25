@@ -104,6 +104,12 @@ export class TrainerController {
     return this.trainerService.getDashboardStats(user);
   }
 
+  @Get(API_ENDPOINTS.TRAINER.DASHBOARD_CHARTS)
+  @ApiOperation({ summary: 'Get all chart data for the trainer dashboard in one call' })
+  getDashboardCharts(@CurrentUser() user: IAuthUser) {
+    return this.trainerService.getDashboardCharts(user);
+  }
+
   // ── Reports ───────────────────────────────────────────────────────────────
 
   @Get(API_ENDPOINTS.TRAINER.REPORTS)
