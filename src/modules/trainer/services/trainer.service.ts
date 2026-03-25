@@ -95,12 +95,14 @@ export class TrainerService {
   // ── My Learners ──────────────────────────────────────────────────────────
 
   async getMyLearners(dto: ListMyLearnersDto, currentUser: IAuthUser) {
-    const trainerId = new Types.ObjectId(currentUser._id);
     const page = Math.max(1, parseInt(String(dto.page ?? 1), 10) || 1);
     const limit = Math.max(1, parseInt(String(dto.limit ?? 10), 10) || 10);
 
+    // Use getMyLearnerIds to include direct assignments AND course-enrolled learners
+    const learnerIds = await this.getMyLearnerIds(currentUser._id);
+
     const filter: any = {
-      trainerId,
+      _id: { $in: learnerIds },
       role: UserRole.LEARNER,
       status: { $ne: UserStatus.DELETED },
     };
@@ -843,7 +845,8 @@ export class TrainerService {
     };
 
     if (status) {
-      filterQuery.status = status;
+      // DB stores statuses as uppercase (e.g. 'PENDING'); normalise for a safe match
+      filterQuery.status = status.toUpperCase();
     }
 
     const [data, total] = await Promise.all([
