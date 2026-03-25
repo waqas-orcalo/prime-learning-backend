@@ -19,6 +19,7 @@ import { ResourcesService } from '../services/resources.service';
 import { CreateResourceDto } from '../dto/create-resource.dto';
 import { UpdateResourceDto } from '../dto/update-resource.dto';
 import { ListResourcesDto } from '../dto/list-resources.dto';
+import { ShareResourceDto } from '../dto/share-resource.dto';
 
 @ApiTags(API_TAGS.RESOURCES)
 @ApiBearerAuth()
@@ -72,6 +73,28 @@ export class ResourcesController {
   @ApiOperation({ summary: 'Toggle bookmark on a resource for the current user' })
   toggleBookmark(@Param('id') id: string, @CurrentUser() user: IAuthUser) {
     return this.resourcesService.toggleBookmark(id, user);
+  }
+
+  // ── Share resource ────────────────────────────────────────────────────────────
+  @Post(API_ENDPOINTS.RESOURCES.SHARE)
+  @ApiOperation({ summary: 'Share a resource with specific users (owner or admin only)' })
+  shareResource(
+    @Param('id') id: string,
+    @Body() dto: ShareResourceDto,
+    @CurrentUser() user: IAuthUser,
+  ) {
+    return this.resourcesService.shareResource(id, dto, user);
+  }
+
+  // ── Revoke share ──────────────────────────────────────────────────────────────
+  @Delete(':id/share/:userId')
+  @ApiOperation({ summary: 'Revoke a specific user\'s access to a resource (owner or admin only)' })
+  revokeShare(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @CurrentUser() user: IAuthUser,
+  ) {
+    return this.resourcesService.revokeShare(id, userId, user);
   }
 
   // ── Toggle featured ───────────────────────────────────────────────────────────

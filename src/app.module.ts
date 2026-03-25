@@ -29,6 +29,7 @@ import { LearningSupportModule } from './modules/learning-support/learning-suppo
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { GroupsModule } from './modules/groups/groups.module';
 import { ScorecardModule } from './modules/scorecard/scorecard.module';
+import { TrainerModule } from './modules/trainer/trainer.module';
 
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
@@ -75,6 +76,7 @@ import { mongoConfig } from './config/mongo.config';
     LearningSupportModule,
     GroupsModule,
     ScorecardModule,
+    TrainerModule,
   ],
   providers: [
     // ── Global guard: every route is JWT-protected unless marked @Public() ──

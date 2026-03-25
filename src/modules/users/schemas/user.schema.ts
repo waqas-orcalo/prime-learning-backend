@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
 import { AbstractSchema } from '../../../database/schemas/abstract/abstract.schema';
 import { UserRole, UserStatus } from '../../../common/constants/enums.constant';
 
@@ -24,6 +24,22 @@ export class User extends AbstractSchema {
 
   @Prop({ enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
+
+  /** Trainer assigned to this learner (only populated for LEARNER role) */
+  @Prop({ type: SchemaTypes.ObjectId, ref: 'User', default: null })
+  trainerId: Types.ObjectId | null;
+
+  /** Cohort / group label for the learner (e.g. "Cohort 2025-Q1") */
+  @Prop({ default: null })
+  cohort: string | null;
+
+  /** Programme the learner is enrolled in */
+  @Prop({ default: null })
+  programme: string | null;
+
+  /** Employer name */
+  @Prop({ default: null })
+  employer: string | null;
 
   @Prop({ default: null })
   avatarUrl: string | null;

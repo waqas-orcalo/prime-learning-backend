@@ -32,6 +32,9 @@ export class Resource extends AbstractSchema {
   @Prop({ default: false }) featured: boolean;
   @Prop({ type: Types.ObjectId, ref: 'User', required: true }) uploadedBy: Types.ObjectId;
   @Prop({ default: false }) isDeleted: boolean;
+
+  /** Users this resource has been explicitly shared with */
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] }) sharedWith: Types.ObjectId[];
 }
 
 export const ResourceSchema = SchemaFactory.createForClass(Resource);
@@ -41,3 +44,4 @@ ResourceSchema.index({ type: 1, isDeleted: 1 });
 ResourceSchema.index({ uploadedBy: 1 });
 ResourceSchema.index({ featured: 1, isDeleted: 1 });
 ResourceSchema.index({ title: 'text', description: 'text', tags: 'text' });
+ResourceSchema.index({ sharedWith: 1 });
