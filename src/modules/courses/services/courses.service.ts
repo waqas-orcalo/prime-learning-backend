@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Optional } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CourseRepository } from '../repository/course.repository';
@@ -7,12 +7,17 @@ import { UpdateCourseDto } from '../dto/update-course.dto';
 import { EnrollUsersDto } from '../dto/enroll-users.dto';
 import { EnrollGroupDto } from '../dto/enroll-group.dto';
 import { ListCoursesDto } from '../dto/list-courses.dto';
+import { AssignTrainersDto } from '../dto/assign-trainers.dto';
 import { paginatedResponse, ResponseMessage, successResponse } from '../../../common/constants/responses.constant';
 import { IAuthUser } from '../../../common/interfaces/auth-user.interface';
+import { UserRole } from '../../../common/constants/enums.constant';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { NotificationType } from '../../notifications/schemas/notification.schema';
 import { CourseProgress } from '../schemas/course-progress.schema';
 import { GroupRepository } from '../../groups/repository/group.repository';
+
+/** Roles that see all courses regardless of ownership */
+const ADMIN_ROLES: UserRole[] = [UserRole.SUPER_ADMIN, UserRole.ORG_ADMIN];
 
 @Injectable()
 export class CoursesService {
@@ -31,12 +36,40 @@ export class CoursesService {
     return successResponse(course, ResponseMessage.CREATED, 201);
   }
 
-  async findAll(dto: ListCoursesDto) {
+  async findAll(dto: ListCoursesDto, currentUser: IAuthUser) {
     const { search, status, enrolledUserId } = dto;
     const page  = Math.max(1, parseInt(String(dto.page  ?? 1),  10) || 1);
     const limit = Math.max(1, parseInt(String(dto.limit ?? 10), 10) || 10);
-    const { data, total } = await this.courseRepository.findAllPaginated(page, limit, search, status, enrolledUserId);
-    return paginatedResponse(data, total, page, limit);
+
+    // TRAINER: only own courses + admin-assigned courses
+    const isTrainer = currentUser.role === UserRole.TRAINER;
+    const isAdmin   = ADMIN_ROLES.includes(currentUser.role as UserRole);
+
+    const { data, total } = await this.courseRepository.findAllPaginated(
+      page,
+      limit,
+      search,
+      status,
+      enrolledUserId,
+      // Learners, IQA, Employer, etc. still see all published courses
+      isTrainer && !isAdmin
+        ? { trainerAccessId: currentUser._id }
+        : undefined,
+    );
+
+    // Annotate each course with whether this trainer created it or was assigned
+    const annotated = data.map((c: any) => ({
+      ...c,
+      isOwner: c.createdBy
+        ? c.createdBy.toString() === currentUser._id
+        : false,
+      trainerHasAccess: isTrainer
+        ? (c.createdBy?.toString() === currentUser._id ||
+           (c.assignedTrainers ?? []).some((tid: any) => tid.toString() === currentUser._id))
+        : true,
+    }));
+
+    return paginatedResponse(annotated, total, page, limit);
   }
 
   async findOne(id: string) {
@@ -108,6 +141,31 @@ export class CoursesService {
       { enrolledCount: memberIds.length, groupName: (group as any).name },
       `${memberIds.length} group member(s) enrolled successfully`,
     );
+  }
+
+  // ── Assign / Revoke trainer access ──────────────────────────────────────────
+
+  async assignTrainers(courseId: string, dto: AssignTrainersDto, currentUser: IAuthUser) {
+    // Only admins can assign trainers to a course
+    if (!ADMIN_ROLES.includes(currentUser.role as UserRole)) {
+      throw new ForbiddenException('Only admins can assign trainers to courses.');
+    }
+    const course = await this.courseRepository.findById(courseId);
+    if (!course || (course as any).isDeleted) throw new NotFoundException('Course not found.');
+
+    const updated = await this.courseRepository.assignTrainers(courseId, dto.trainerIds);
+    return successResponse(updated, 'Trainers assigned to course successfully');
+  }
+
+  async revokeTrainer(courseId: string, trainerId: string, currentUser: IAuthUser) {
+    if (!ADMIN_ROLES.includes(currentUser.role as UserRole)) {
+      throw new ForbiddenException('Only admins can revoke trainer access.');
+    }
+    const course = await this.courseRepository.findById(courseId);
+    if (!course || (course as any).isDeleted) throw new NotFoundException('Course not found.');
+
+    const updated = await this.courseRepository.revokeTrainer(courseId, trainerId);
+    return successResponse(updated, 'Trainer access revoked successfully');
   }
 
   async unenroll(courseId: string, userId: string) {

@@ -16,6 +16,8 @@ export class Course extends AbstractSchema {
   @Prop({ default: '📘' }) thumbnailEmoji: string;
   @Prop({ type: Types.ObjectId, ref: 'User', default: null }) createdBy: Types.ObjectId;
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] }) enrolledUsers: Types.ObjectId[];
+  /** Trainers explicitly given access to this course by an admin */
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] }) assignedTrainers: Types.ObjectId[];
   @Prop({
     type: [{
       name: String,
@@ -39,3 +41,6 @@ export class Course extends AbstractSchema {
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
+
+CourseSchema.index({ createdBy: 1, isDeleted: 1 });
+CourseSchema.index({ assignedTrainers: 1, isDeleted: 1 });

@@ -172,6 +172,8 @@ export const API_ENDPOINTS = {
     ENROLL: '/:id/enroll',
     ENROLLMENTS: '/:id/enrollments',
     UNENROLL: '/:id/enroll/:userId',
+    ASSIGN_TRAINERS: '/:id/assign-trainers',
+    REVOKE_TRAINER: '/:id/assign-trainers/:trainerId',
   },
 
   // ── Feedback & Comments ───────────────────────────────────────────────────
