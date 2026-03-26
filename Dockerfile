@@ -41,6 +41,10 @@ COPY --from=builder /app/dist ./dist
 
 # Create a non-root user for security
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Winston file transports mkdir under ./logs — /app is root-owned, so appuser needs this dir
+RUN mkdir -p /app/logs && chown -R appuser:appgroup /app/logs
+
 USER appuser
 
 # Expose the app port (default 3000)
