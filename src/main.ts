@@ -4,15 +4,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-
+ 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const httpAdapterHost = app.get(HttpAdapterHost);
-
+ 
   // ── Global prefix ─────────────────────────────────────────────────────────
   app.setGlobalPrefix('api/v1');
-
+ 
   // ── CORS ──────────────────────────────────────────────────────────────────
   // CORS_ORIGINS can be a comma-separated list, e.g.:
   //   http://localhost:3001,https://your-deployed-frontend.com
@@ -25,7 +25,7 @@ async function bootstrap() {
     rawOrigins === '*'
       ? null  // null = allow all (will echo origin back)
       : rawOrigins.split(',').map((o) => o.trim()).filter(Boolean);
-
+ 
   app.enableCors({
     origin: (requestOrigin, callback) => {
       // Allow server-to-server / Swagger / curl (no Origin header)
@@ -36,11 +36,11 @@ async function bootstrap() {
       if (allowList.includes(requestOrigin)) return callback(null, true);
       callback(new Error(`CORS: origin "${requestOrigin}" is not allowed`));
     },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE','FETCH' 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
   });
-
+ 
   // ── Global Validation Pipe ────────────────────────────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
@@ -50,10 +50,10 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
-
+ 
   // ── Global Exception Filter ───────────────────────────────────────────────
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapterHost));
-
+ 
   // ── Swagger ───────────────────────────────────────────────────────────────
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Prime Learning API')
@@ -63,7 +63,7 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document);
-
+ 
   // ── Start ─────────────────────────────────────────────────────────────────
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
@@ -71,3 +71,4 @@ async function bootstrap() {
   Logger.log(`📖  Swagger docs at    http://localhost:${port}/api/docs`);
 }
 bootstrap();
+ 
