@@ -58,6 +58,12 @@ export class UsersController {
     return this.usersService.updatePresence(dto, user);
   }
 
+  @Delete('me')
+  @ApiOperation({ summary: 'Delete the currently authenticated user\'s own account' })
+  deleteMyAccount(@CurrentUser() user: IAuthUser) {
+    return this.usersService.deleteMyAccount(user);
+  }
+
   // ── Static-segment routes before /:id ────────────────────────────────────
   @Get('by-email/:email')
   @Roles(UserRole.TRAINER, UserRole.ORG_ADMIN, UserRole.SUPER_ADMIN)

@@ -84,6 +84,12 @@ export class UsersService {
     return successResponse(null, ResponseMessage.DELETED);
   }
 
+  /** DELETE /users/me — allows a user to delete their own account */
+  async deleteMyAccount(currentUser: IAuthUser) {
+    await this.userRepository.deleteOne({ _id: currentUser._id } as any);
+    return successResponse(null, ResponseMessage.ACCOUNT_DELETED);
+  }
+
   async create(dto: CreateUserDto) {
     const passwordHash = await bcrypt.hash(dto.password, 12);
     const user = await this.userRepository.create({

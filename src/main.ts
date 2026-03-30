@@ -36,7 +36,7 @@ async function bootstrap() {
       if (allowList.includes(requestOrigin)) return callback(null, true);
       callback(new Error(`CORS: origin "${requestOrigin}" is not allowed`));
     },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE','FETCH' 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE','FETCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
   });

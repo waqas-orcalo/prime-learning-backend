@@ -17,6 +17,7 @@ export const ErrorMessages = {
     ACCOUNT_BLOCKED: 'Your account has been blocked.',
     EMAIL_NOT_VERIFIED: 'Please verify your email before signing in.',
     SAME_PASSWORD: 'New password must be different from the current password.',
+    INCORRECT_PASSWORD: 'The old password you entered is incorrect.',
   },
 
   // ── User ────────────────────────────────────────────────────────────────

@@ -128,19 +128,32 @@ export class AuthService {
 
   // ── Change Password ────────────────────────────────────────────────────────
   async changePassword(currentUser: IAuthUser, dto: ChangePasswordDto) {
-    if (dto.newPassword !== dto.confirmNewPassword) {
+    // 1. Confirm new passwords match
+    if (dto.newPassword !== dto.confirmPassword) {
       throw new BadRequestException('Passwords do not match.');
     }
 
-    const user = await this.userRepository.findById(currentUser._id);
+    // 2. Fetch user with passwordHash (select: false field)
+    const user = await this.userRepository.findByEmailWithPassword(
+      currentUser.email,
+    );
+
+    // 3. Verify old password
     const match = await bcrypt.compare(
-      dto.currentPassword,
+      dto.oldPassword,
       (user as any).passwordHash,
     );
     if (!match) {
+      throw new BadRequestException(ErrorMessages.AUTH.INCORRECT_PASSWORD);
+    }
+
+    // 4. Ensure new password differs from old
+    const isSame = await bcrypt.compare(dto.newPassword, (user as any).passwordHash);
+    if (isSame) {
       throw new BadRequestException(ErrorMessages.AUTH.SAME_PASSWORD);
     }
 
+    // 5. Hash and persist
     const newHash = await bcrypt.hash(dto.newPassword, 12);
     await this.userRepository.findOneAndUpdate(
       { _id: (user as any)._id },

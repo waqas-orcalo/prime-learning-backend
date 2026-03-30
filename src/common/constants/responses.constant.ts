@@ -25,6 +25,7 @@ export const ResponseMessage = {
   ALREADY_EXISTS: 'Record already exists',
   SIGNED_SUCCESSFULLY: 'Signed successfully',
   PASSWORD_CHANGED: 'Password changed successfully',
+  ACCOUNT_DELETED: 'Account deleted successfully',
 } as const;
 
 // ── Response shape builders ────────────────────────────────────────────────────
